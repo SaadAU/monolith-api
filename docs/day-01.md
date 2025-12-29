@@ -55,6 +55,51 @@ Enabled strict mode with the following settings:
 - `noUnusedLocals: true` - Report unused local variables
 - `noUnusedParameters: true` - Report unused parameters
 
+### 6. Database Setup (SQLite)
+
+- Installed TypeORM with `better-sqlite3` driver for local development
+- Configured TypeORM in `app.module.ts` with auto-sync for development
+- Database file: `eventboard.db` (created automatically)
+
+```typescript
+TypeOrmModule.forRoot({
+  type: 'better-sqlite3',
+  database: 'eventboard.db',
+  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  synchronize: process.env.NODE_ENV !== 'production',
+})
+```
+
+### 7. Students Module (CRUD)
+
+Created a complete Students feature module with:
+
+**Entity:** `src/modules/students/entities/student.entity.ts`
+- UUID primary key
+- Fields: name, email (unique), phone, enrollmentNumber, isActive
+- Auto timestamps: createdAt, updatedAt
+
+**DTOs:**
+- `CreateStudentDto` - with validation decorators (class-validator)
+- `UpdateStudentDto` - extends CreateStudentDto with PartialType
+
+**Service:** Full CRUD operations with TypeORM Repository pattern
+
+**Controller:** RESTful endpoints:
+- `POST /students` - Create student
+- `GET /students` - List all students
+- `GET /students/:id` - Get student by ID
+- `PATCH /students/:id` - Update student
+- `DELETE /students/:id` - Delete student
+
+### 8. Swagger UI Integration
+
+- Configured Swagger in `main.ts` using `@nestjs/swagger`
+- Added API documentation decorators to DTOs and controllers
+- Enabled global ValidationPipe with class-transformer
+
+**Access Swagger UI:** http://localhost:3000/api
+
 ## How to Run
 
 ```bash
@@ -89,12 +134,28 @@ npm run start:dev
    }
    ```
 
-3. **Lint passes:**
+3. **Swagger UI accessible:**
+   ```
+   http://localhost:3000/api
+   ```
+
+4. **Students API works:**
+   ```bash
+   # Create a student
+   curl -X POST http://localhost:3000/students \
+     -H "Content-Type: application/json" \
+     -d '{"name":"John Doe","email":"john@example.com","enrollmentNumber":"ENR001"}'
+
+   # List students
+   curl http://localhost:3000/students
+   ```
+
+5. **Lint passes:**
    ```bash
    npm run lint
    ```
 
-4. **Format check:**
+6. **Format check:**
    ```bash
    npm run format
    ```
@@ -106,9 +167,27 @@ npm run start:dev
 - [x] Repo has lint/format scripts
 - [x] Readable README with run instructions
 - [x] Day-01 notes documented
+- [x] Database configured (SQLite for local dev)
+- [x] Students CRUD module implemented
+- [x] Swagger UI integrated at `/api`
+- [x] Validation enabled with class-validator
+
+## Packages Installed
+
+```json
+{
+  "@nestjs/typeorm": "^11.0.0",
+  "@nestjs/swagger": "^11.2.3",
+  "typeorm": "^0.3.28",
+  "better-sqlite3": "^11.x",
+  "class-validator": "^0.14.3",
+  "class-transformer": "^0.5.x"
+}
+```
 
 ## Next Steps (Day 2)
 
-- Set up PostgreSQL with Prisma ORM
-- Create initial database schema
-- Add database migrations workflow
+- Add more feature modules (Events, Users, Orgs)
+- Implement authentication with JWT
+- Add error handling and response interceptors
+- Consider migrating to PostgreSQL for production

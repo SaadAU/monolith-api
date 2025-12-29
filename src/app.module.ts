@@ -13,15 +13,11 @@ import { StudentsModule } from './modules/students/students.module';
       load: [configuration],
     }),
     
-    // Database connection - ADD THIS
+    // Database connection - SQLite (local file-based database)
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'eventboard',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'], // Finds all entity files
+      type: 'better-sqlite3',
+      database: 'eventboard.db',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: process.env.NODE_ENV !== 'production', // Auto-create tables (DEV ONLY!)
     }),
     

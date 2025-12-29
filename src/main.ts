@@ -1,11 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger, PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter, AllExceptionsFilter } from './common/filters';
+import { LoggingInterceptor } from './common/interceptors';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  // Use Pino logger
+  const logger = app.get(Logger);
+  app.useLogger(logger);
+
+  // Global logging interceptor (uses PinoLogger for structured logging)
+  const pinoLogger = await app.resolve(PinoLogger);
+  app.useGlobalInterceptors(new LoggingInterceptor(pinoLogger));
 
   // Global exception filters (order matters - AllExceptions should be first)
   app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
@@ -28,13 +38,14 @@ async function bootstrap() {
     .setDescription('The EventBoard monolith API documentation')
     .setVersion('1.0')
     .addTag('students', 'Student management endpoints')
+    .addTag('health', 'Health check endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 Application is running on: http://localhost:${process.env.PORT ?? 3000}`);
-  console.log(`📚 Swagger UI available at: http://localhost:${process.env.PORT ?? 3000}/api`);
+  logger.log(`🚀 Application is running on: http://localhost:${process.env.PORT ?? 3000}`);
+  logger.log(`📚 Swagger UI available at: http://localhost:${process.env.PORT ?? 3000}/api`);
 }
 void bootstrap();

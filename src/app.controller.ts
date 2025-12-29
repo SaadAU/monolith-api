@@ -1,13 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller()
+@ApiExcludeController()
 export class AppController {
-  @Get('health')
-  getHealth() {
+  @Get()
+  getRoot() {
     return {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      service: 'EventBoard API',
+      message: 'Welcome to EventBoard API',
+      docs: '/api',
     };
   }
 }

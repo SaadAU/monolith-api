@@ -23,17 +23,29 @@ import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware'
       useFactory: (configService: ConfigService) => ({
         pinoHttp: {
           level: configService.get<string>('environment') === 'production' ? 'info' : 'debug',
-          transport:
-            configService.get<string>('environment') !== 'production'
-              ? {
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    singleLine: true,
-                    translateTime: 'SYS:standard',
+          transport: {
+            targets: [
+              // Console output (pretty in dev, JSON in prod)
+              configService.get<string>('environment') !== 'production'
+                ? {
+                    target: 'pino-pretty',
+                    options: {
+                      colorize: true,
+                      singleLine: true,
+                      translateTime: 'SYS:standard',
+                    },
+                  }
+                : {
+                    target: 'pino/file',
+                    options: { destination: 1 }, // stdout
                   },
-                }
-              : undefined,
+              // File output (JSON)
+              {
+                target: 'pino/file',
+                options: { destination: './logs/app.log', mkdir: true },
+              },
+            ],
+          },
           customProps: (req: IncomingMessage) => ({
             requestId: (req as IncomingMessage & { [REQUEST_ID_HEADER]?: string })[REQUEST_ID_HEADER],
           }),

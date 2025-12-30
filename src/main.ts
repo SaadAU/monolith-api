@@ -2,12 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger, PinoLogger } from 'nestjs-pino';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter, AllExceptionsFilter } from './common/filters';
 import { LoggingInterceptor } from './common/interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  // Enable cookie-parser for JWT in cookies
+  app.use(cookieParser());
 
   // Use Pino logger
   const logger = app.get(Logger);
@@ -39,6 +43,9 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('students', 'Student management endpoints')
     .addTag('health', 'Health check endpoints')
+    .addTag('Authentication', 'User authentication endpoints')
+    .addBearerAuth()
+    .addCookieAuth('access_token')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

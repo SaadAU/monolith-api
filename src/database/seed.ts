@@ -39,7 +39,7 @@ async function seed() {
     
     const orgs = [
       {
-        id: '11111111-1111-1111-1111-111111111111',
+        id: '11111111-1111-4111-a111-111111111111',
         name: 'Acme Corporation',
         slug: 'acme-corp',
         description: 'A leading technology company',
@@ -49,7 +49,7 @@ async function seed() {
         isActive: true,
       },
       {
-        id: '22222222-2222-2222-2222-222222222222',
+        id: '22222222-2222-4222-a222-222222222222',
         name: 'TechStart Inc',
         slug: 'techstart',
         description: 'Innovative startup accelerator',
@@ -59,7 +59,7 @@ async function seed() {
         isActive: true,
       },
       {
-        id: '33333333-3333-3333-3333-333333333333',
+        id: '33333333-3333-4333-a333-333333333333',
         name: 'Global Events Ltd',
         slug: 'global-events',
         description: 'Professional event management company',
@@ -87,59 +87,59 @@ async function seed() {
     const users = [
       // Acme Corp users
       {
-        id: 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        id: 'aaaa1111-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
         name: 'Admin User',
         email: 'admin@acme.com',
         password: 'Admin123!',
         phone: '+1-555-101-0001',
         role: 'admin',
-        orgId: '11111111-1111-1111-1111-111111111111',
+        orgId: '11111111-1111-4111-a111-111111111111',
       },
       {
-        id: 'aaaa2222-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        id: 'aaaa2222-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
         name: 'John Organizer',
         email: 'john@acme.com',
         password: 'Organizer123!',
         phone: '+1-555-101-0002',
         role: 'organizer',
-        orgId: '11111111-1111-1111-1111-111111111111',
+        orgId: '11111111-1111-4111-a111-111111111111',
       },
       {
-        id: 'aaaa3333-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        id: 'aaaa3333-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
         name: 'Jane Member',
         email: 'jane@acme.com',
         password: 'Member123!',
         phone: '+1-555-101-0003',
         role: 'member',
-        orgId: '11111111-1111-1111-1111-111111111111',
+        orgId: '11111111-1111-4111-a111-111111111111',
       },
       // TechStart users
       {
-        id: 'bbbb1111-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        id: 'bbbb1111-bbbb-4bbb-bbbb-bbbbbbbbbbbb',
         name: 'TechStart Admin',
         email: 'admin@techstart.com',
         password: 'Admin123!',
         phone: '+1-555-202-0001',
         role: 'admin',
-        orgId: '22222222-2222-2222-2222-222222222222',
+        orgId: '22222222-2222-4222-a222-222222222222',
       },
       {
-        id: 'bbbb2222-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        id: 'bbbb2222-bbbb-4bbb-bbbb-bbbbbbbbbbbb',
         name: 'Sarah Developer',
         email: 'sarah@techstart.com',
         password: 'Developer123!',
         role: 'member',
-        orgId: '22222222-2222-2222-2222-222222222222',
+        orgId: '22222222-2222-4222-a222-222222222222',
       },
       // Global Events users
       {
-        id: 'cccc1111-cccc-cccc-cccc-cccccccccccc',
+        id: 'cccc1111-cccc-4ccc-8ccc-cccccccccccc',
         name: 'Events Manager',
         email: 'manager@globalevents.com',
         password: 'Manager123!',
         phone: '+1-555-303-0001',
         role: 'admin',
-        orgId: '33333333-3333-3333-3333-333333333333',
+        orgId: '33333333-3333-4333-a333-333333333333',
       },
     ];
 

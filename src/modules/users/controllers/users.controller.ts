@@ -22,6 +22,7 @@ export class UsersController {
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully', type: User })
+  @ApiResponse({ status: 400, description: 'Invalid organization ID' })
   @ApiResponse({ status: 409, description: 'User with this email already exists in organization' })
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);

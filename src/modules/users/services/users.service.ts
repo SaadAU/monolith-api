@@ -82,6 +82,18 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
 
+    // If email is being updated, ensure it is unique within the same organization
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const existingUserWithEmail = await this.usersRepository.findOne({
+        where: { email: updateUserDto.email, orgId: user.orgId },
+      });
+
+      if (existingUserWithEmail && existingUserWithEmail.id !== user.id) {
+        throw new ConflictException(
+          `User with email '${updateUserDto.email}' already exists in this organization`,
+        );
+      }
+    }
     Object.assign(user, updateUserDto);
     return await this.usersRepository.save(user);
   }

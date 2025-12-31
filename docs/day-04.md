@@ -441,7 +441,7 @@ GET /users?orgId=11111111-1111-1111-1111-111111111111
 
 ## Security Notes
 
-⚠️ **Password Hashing:** Currently using SHA256 for simplicity. In production, replace with `bcrypt`:
+⚠️ **Password Hashing:** Use a dedicated password hashing algorithm (for example, `bcrypt`); do **not** use fast, unsalted hashes like SHA256 for storing passwords.
 
 ```bash
 npm install bcrypt

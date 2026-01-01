@@ -66,11 +66,11 @@ export class SignupDto {
   phone?: string;
 
   @IsOptional()
-  @IsEnum(UserRole, { message: 'Role must be one of: admin, organizer, member' })
+  @IsEnum(UserRole, { message: 'Role must be one of: admin, moderator, user' })
   @ApiProperty({
     description: 'User role',
     enum: UserRole,
-    default: UserRole.MEMBER,
+    default: UserRole.USER,
     required: false,
   })
   role?: UserRole;

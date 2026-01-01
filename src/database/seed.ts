@@ -1,9 +1,14 @@
 import { DataSource } from 'typeorm';
-import { createHash } from 'crypto';
+import * as argon2 from 'argon2';
 
-// Simple password hashing - matches UsersService
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex');
+// Password hashing using Argon2 - matches AuthService
+async function hashPassword(password: string): Promise<string> {
+  return argon2.hash(password, {
+    type: argon2.argon2id,
+    memoryCost: 65536, // 64 MB
+    timeCost: 3,
+    parallelism: 4,
+  });
 }
 
 async function seed() {
@@ -97,20 +102,20 @@ async function seed() {
       },
       {
         id: 'aaaa2222-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
-        name: 'John Organizer',
+        name: 'John Moderator',
         email: 'john@acme.com',
-        password: 'Organizer123!',
+        password: 'Moderator123!',
         phone: '+1-555-101-0002',
-        role: 'organizer',
+        role: 'moderator',
         orgId: '11111111-1111-4111-a111-111111111111',
       },
       {
         id: 'aaaa3333-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
-        name: 'Jane Member',
+        name: 'Jane User',
         email: 'jane@acme.com',
-        password: 'Member123!',
+        password: 'User123!',
         phone: '+1-555-101-0003',
-        role: 'member',
+        role: 'user',
         orgId: '11111111-1111-4111-a111-111111111111',
       },
       // TechStart users
@@ -128,7 +133,7 @@ async function seed() {
         name: 'Sarah Developer',
         email: 'sarah@techstart.com',
         password: 'Developer123!',
-        role: 'member',
+        role: 'user',
         orgId: '22222222-2222-4222-a222-222222222222',
       },
       // Global Events users
@@ -144,7 +149,7 @@ async function seed() {
     ];
 
     for (const user of users) {
-      const passwordHash = hashPassword(user.password);
+      const passwordHash = await hashPassword(user.password);
       await dataSource.query(
         `INSERT INTO users (id, name, email, "passwordHash", phone, role, "orgId", "isActive", "createdAt", "updatedAt")
          VALUES ($1, $2, $3, $4, $5, $6, $7, true, NOW(), NOW())`,
@@ -194,9 +199,9 @@ async function seed() {
     console.log(`   • ${users.length} users`);
     console.log(`   • ${students.length} students\n`);
     console.log('🔐 Test credentials:');
-    console.log('   • admin@acme.com / Admin123!');
-    console.log('   • john@acme.com / Organizer123!');
-    console.log('   • jane@acme.com / Member123!\n');
+    console.log('   • admin@acme.com / Admin123! (admin)');
+    console.log('   • john@acme.com / Moderator123! (moderator)');
+    console.log('   • jane@acme.com / User123! (user)\n');
 
   } catch (error) {
     console.error('❌ Seed failed:', error);

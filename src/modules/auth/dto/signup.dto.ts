@@ -76,7 +76,7 @@ export class SignupDto {
   role?: UserRole;
 
   @IsNotEmpty({ message: 'Organization ID is required' })
-  @IsUUID(undefined, { message: 'Organization ID must be a valid UUID' })
+  @IsUUID('4', { message: 'Organization ID must be a valid UUID' })
   @ApiProperty({
     description: 'Organization ID the user belongs to',
     example: '22222222-2222-4222-a222-222222222222',

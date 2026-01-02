@@ -5,11 +5,12 @@ import { LoggerModule } from 'nestjs-pino';
 import { IncomingMessage } from 'http';
 import configuration from './config/configuration';
 import { AppController } from './app.controller';
-import { StudentsModule } from './modules/students/students.module';
-import { HealthModule } from './modules/health/health.module';
+//import { StudentsModule } from './modules/students/students.module';
+// import { HealthModule } from './modules/health/health.module';
 import { OrgsModule } from './modules/orgs/orgs.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { EventsModule } from './modules/events/events.module';
 import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware';
 
 @Module({
@@ -75,11 +76,12 @@ import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware'
     }),
     
     // Feature modules
-    HealthModule,
-    StudentsModule,
+    // HealthModule,
+    // StudentsModule,
     OrgsModule,
     UsersModule,
     AuthModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [],

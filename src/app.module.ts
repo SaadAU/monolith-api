@@ -9,6 +9,7 @@ import { StudentsModule } from './modules/students/students.module';
 import { HealthModule } from './modules/health/health.module';
 import { OrgsModule } from './modules/orgs/orgs.module';
 import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware';
 
 @Module({
@@ -78,6 +79,7 @@ import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware'
     StudentsModule,
     OrgsModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [],

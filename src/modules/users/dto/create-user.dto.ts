@@ -45,8 +45,8 @@ export class CreateUserDto {
   phone?: string;
 
   @IsOptional()
-  @IsEnum(UserRole, { message: 'Role must be one of: admin, organizer, member' })
-  @ApiProperty({ description: 'User role', enum: UserRole, default: UserRole.MEMBER, required: false })
+  @IsEnum(UserRole, { message: 'Role must be one of: admin, moderator, user' })
+  @ApiProperty({ description: 'User role', enum: UserRole, default: UserRole.USER, required: false })
   role?: UserRole;
 
   @IsNotEmpty({ message: 'Organization ID is required' })

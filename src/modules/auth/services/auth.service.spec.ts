@@ -31,7 +31,7 @@ describe('AuthService', () => {
     email: 'john@example.com',
     passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$mockHash', // Mock Argon2 hash
     phone: '+1-555-123-4567',
-    role: UserRole.MEMBER,
+    role: UserRole.USER,
     orgId: '550e8400-e29b-41d4-a716-446655440000',
     org: mockOrg,
     isActive: true,

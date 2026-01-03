@@ -11,10 +11,16 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Org } from '../../orgs/entities/org.entity';
 
+/**
+ * User roles for RBAC authorization
+ * - ADMIN: Full access to all resources
+ * - MODERATOR: Can manage content and moderate users
+ * - USER: Standard user with basic access
+ */
 export enum UserRole {
   ADMIN = 'admin',
-  ORGANIZER = 'organizer',
-  MEMBER = 'member',
+  MODERATOR = 'moderator',
+  USER = 'user',
 }
 
 @Entity('users')
@@ -44,10 +50,10 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.MEMBER,
+    default: UserRole.USER,
   })
   @Index()
-  @ApiProperty({ description: 'User role', enum: UserRole, default: UserRole.MEMBER })
+  @ApiProperty({ description: 'User role', enum: UserRole, default: UserRole.USER })
   role!: UserRole;
 
   @Column({ type: 'uuid' })

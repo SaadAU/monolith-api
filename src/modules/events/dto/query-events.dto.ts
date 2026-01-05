@@ -8,7 +8,7 @@ import { EventStatus } from '../entities/event.entity';
  */
 export class QueryEventsDto {
   @IsOptional()
-  @IsEnum(EventStatus, { message: 'Status must be one of: draft, published, cancelled, completed' })
+  @IsEnum(EventStatus, { message: 'Status must be one of: draft, submitted, approved, rejected, cancelled, completed' })
   @ApiProperty({ 
     description: 'Filter by event status', 
     enum: EventStatus, 

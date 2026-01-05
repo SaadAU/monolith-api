@@ -48,7 +48,7 @@ export class CreateEventDto {
   endDate?: string;
 
   @IsOptional()
-  @IsEnum(EventStatus, { message: 'Status must be one of: draft, published, cancelled, completed' })
+  @IsEnum(EventStatus, { message: 'Status must be one of: draft, submitted, approved, rejected, cancelled, completed' })
   @ApiProperty({ 
     description: 'Event status', 
     enum: EventStatus, 

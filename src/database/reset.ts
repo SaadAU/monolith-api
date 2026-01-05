@@ -20,6 +20,9 @@ async function reset() {
     // Drop tables in correct order (respect foreign keys)
     console.log('🗑️  Dropping tables...');
     
+    await dataSource.query('DROP TABLE IF EXISTS events CASCADE');
+    console.log('   ✓ Dropped events table');
+    
     await dataSource.query('DROP TABLE IF EXISTS users CASCADE');
     console.log('   ✓ Dropped users table');
     
@@ -33,6 +36,9 @@ async function reset() {
     console.log('\n🗑️  Dropping enum types...');
     await dataSource.query('DROP TYPE IF EXISTS users_role_enum CASCADE');
     console.log('   ✓ Dropped users_role_enum type');
+    
+    await dataSource.query('DROP TYPE IF EXISTS events_status_enum CASCADE');
+    console.log('   ✓ Dropped events_status_enum type');
 
     console.log('\n✅ Database reset complete!');
     console.log('\n📋 Next steps:');

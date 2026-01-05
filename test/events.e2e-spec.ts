@@ -134,7 +134,7 @@ describe('Events CRUD (e2e)', () => {
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [eventA2Id, 'Org A Event 2', 'Event created by User A2', '2026-07-20T14:00:00Z', 'published', false, orgAId, userA2Id]
+      [eventA2Id, 'Org A Event 2', 'Event created by User A2', '2026-07-20T14:00:00Z', 'approved', false, orgAId, userA2Id]
     );
 
     // Event owned by User B1 in Org B

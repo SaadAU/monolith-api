@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { EventStatus } from '../entities/event.entity';
 
@@ -85,9 +85,83 @@ export class EventResponseDto {
 }
 
 /**
- * Response DTO for paginated event list
+ * Pagination metadata for cursor-based pagination
+ */
+export class CursorPaginationMeta {
+  @ApiProperty({ description: 'Cursor to fetch next page (null if no more pages)' })
+  nextCursor!: string | null;
+
+  @ApiProperty({ description: 'Cursor to fetch previous page (null if on first page)' })
+  prevCursor!: string | null;
+
+  @ApiProperty({ description: 'Whether there are more items after this page' })
+  hasNextPage!: boolean;
+
+  @ApiProperty({ description: 'Whether there are items before this page' })
+  hasPrevPage!: boolean;
+
+  @ApiProperty({ description: 'Number of items in current response' })
+  count!: number;
+}
+
+/**
+ * Pagination metadata for offset-based pagination
+ */
+export class OffsetPaginationMeta {
+  @ApiProperty({ description: 'Total number of items matching the query' })
+  total!: number;
+
+  @ApiProperty({ description: 'Current page number' })
+  page!: number;
+
+  @ApiProperty({ description: 'Number of items per page' })
+  limit!: number;
+
+  @ApiProperty({ description: 'Total number of pages' })
+  totalPages!: number;
+
+  @ApiProperty({ description: 'Whether there is a next page' })
+  hasNextPage!: boolean;
+
+  @ApiProperty({ description: 'Whether there is a previous page' })
+  hasPrevPage!: boolean;
+}
+
+/**
+ * Response DTO for paginated event list with cursor-based pagination
+ * Preferred for feeds, infinite scroll, real-time data
  */
 export class EventListResponseDto {
+  @ApiProperty({ description: 'List of events', type: [EventResponseDto] })
+  data!: EventResponseDto[];
+
+  @ApiProperty({ description: 'Pagination metadata (cursor-based)', type: CursorPaginationMeta })
+  pagination!: CursorPaginationMeta;
+
+  @ApiPropertyOptional({ 
+    description: 'Total count (only included with offset pagination or when explicitly requested)',
+    required: false,
+  })
+  total?: number;
+}
+
+/**
+ * Response DTO for paginated event list with offset-based pagination
+ * Useful for admin tables, page navigation
+ */
+export class EventListOffsetResponseDto {
+  @ApiProperty({ description: 'List of events', type: [EventResponseDto] })
+  data!: EventResponseDto[];
+
+  @ApiProperty({ description: 'Pagination metadata (offset-based)', type: OffsetPaginationMeta })
+  pagination!: OffsetPaginationMeta;
+}
+
+/**
+ * Legacy response format for backwards compatibility
+ * @deprecated Use EventListResponseDto instead
+ */
+export class EventListLegacyResponseDto {
   @ApiProperty({ description: 'List of events', type: [EventResponseDto] })
   data!: EventResponseDto[];
 

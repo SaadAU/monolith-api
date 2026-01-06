@@ -11,6 +11,7 @@ import { OrgsModule } from './modules/orgs/orgs.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { EventsModule } from './modules/events/events.module';
+import { ModerationModule } from './modules/moderation/moderation.module';
 import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware';
 
 @Module({
@@ -82,6 +83,7 @@ import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware'
     UsersModule,
     AuthModule,
     EventsModule,
+    ModerationModule,
   ],
   controllers: [AppController],
   providers: [],

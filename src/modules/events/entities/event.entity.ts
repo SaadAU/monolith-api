@@ -15,13 +15,17 @@ import { User } from '../../users/entities/user.entity';
 /**
  * Event status for lifecycle management
  * - DRAFT: Event is being created/edited, not visible to public
- * - PUBLISHED: Event is live and visible
+ * - SUBMITTED: Event submitted for moderation review
+ * - APPROVED: Event approved by moderator, visible to public
+ * - REJECTED: Event rejected by moderator, needs revision
  * - CANCELLED: Event was cancelled
  * - COMPLETED: Event has finished
  */
 export enum EventStatus {
   DRAFT = 'draft',
-  PUBLISHED = 'published',
+  SUBMITTED = 'submitted',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
   CANCELLED = 'cancelled',
   COMPLETED = 'completed',
 }
@@ -96,6 +100,31 @@ export class Event {
   @JoinColumn({ name: 'createdById' })
   @ApiProperty({ description: 'User who created this event', type: () => User })
   createdBy!: User;
+
+  // Moderation audit fields
+  @Column({ type: 'text', nullable: true })
+  @ApiProperty({ description: 'Reason for rejection (if rejected)', required: false })
+  rejectionReason?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'When the event was submitted for review', required: false })
+  submittedAt?: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'When the event was approved', required: false })
+  approvedAt?: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'When the event was rejected', required: false })
+  rejectedAt?: Date;
+
+  @Column({ type: 'uuid', nullable: true })
+  moderatedById?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'moderatedById' })
+  @ApiProperty({ description: 'Moderator who approved/rejected the event', type: () => User, required: false })
+  moderatedBy?: User;
 
   @CreateDateColumn()
   @ApiProperty({ description: 'Creation timestamp' })

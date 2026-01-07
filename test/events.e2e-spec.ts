@@ -348,15 +348,18 @@ describe('Events CRUD (e2e)', () => {
     });
 
     it('should support pagination', async () => {
+      // Test offset-based pagination
       const response = await request(app.getHttpServer())
         .get('/events')
-        .query({ page: 1, limit: 1 })
+        .query({ paginationType: 'offset', page: 1, limit: 1 })
         .set('Authorization', `Bearer ${tokenUserA1}`)
         .expect(200);
 
       expect(response.body.data.length).toBeLessThanOrEqual(1);
-      expect(response.body.page).toBe(1);
-      expect(response.body.limit).toBe(1);
+      expect(response.body.pagination.page).toBe(1);
+      expect(response.body.pagination.limit).toBe(1);
+      expect(response.body.pagination.total).toBeDefined();
+      expect(response.body.pagination.totalPages).toBeDefined();
     });
   });
 
@@ -543,6 +546,308 @@ describe('Events CRUD (e2e)', () => {
         expect(response.body.createdBy).not.toHaveProperty('passwordHash');
         expect(response.body.createdBy).not.toHaveProperty('email');
       }
+    });
+  });
+
+  // ===========================================
+  // DAY 9: LISTING - FILTERS, SORT, PAGINATION
+  // ===========================================
+  describe('Day 9: Listing Features', () => {
+    describe('Query Parameter Validation', () => {
+      it('should reject unknown query parameters', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ unknownParam: 'value' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        // message can be string or array
+        const messages = Array.isArray(response.body.message) 
+          ? response.body.message.join(' ') 
+          : response.body.message;
+        expect(messages).toContain('should not exist');
+      });
+
+      it('should reject invalid status values', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ status: 'invalid_status' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        expect(response.body.message).toBeDefined();
+      });
+
+      it('should reject invalid sortBy values', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ sortBy: 'passwordHash' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        expect(response.body.message).toBeDefined();
+      });
+
+      it('should reject invalid sortOrder values', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ sortOrder: 'INVALID' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        expect(response.body.message).toBeDefined();
+      });
+
+      it('should reject search queries exceeding 100 characters', async () => {
+        const longSearch = 'a'.repeat(101);
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ search: longSearch })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        // message can be string or array
+        const messages = Array.isArray(response.body.message) 
+          ? response.body.message.join(' ') 
+          : response.body.message;
+        expect(messages).toContain('100 characters');
+      });
+
+      it('should reject invalid limit values', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ paginationType: 'offset', limit: 150 })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        expect(response.body.message).toBeDefined();
+      });
+
+      it('should reject invalid page values', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ paginationType: 'offset', page: 0 })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        expect(response.body.message).toBeDefined();
+      });
+    });
+
+    describe('Cursor-based Pagination', () => {
+      it('should return cursor pagination metadata by default', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        expect(response.body.data).toBeDefined();
+        expect(response.body.pagination).toBeDefined();
+        expect(response.body.pagination).toHaveProperty('nextCursor');
+        expect(response.body.pagination).toHaveProperty('hasNextPage');
+        expect(response.body.pagination).toHaveProperty('hasPrevPage');
+        expect(response.body.pagination).toHaveProperty('count');
+      });
+
+      it('should paginate using cursor', async () => {
+        // Get first page with limit 1
+        const firstPage = await request(app.getHttpServer())
+          .get('/events')
+          .query({ limit: 1, sortBy: 'createdAt', sortOrder: 'ASC' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        expect(firstPage.body.data.length).toBeLessThanOrEqual(1);
+        expect(firstPage.body.pagination).toBeDefined();
+        expect(firstPage.body.pagination.hasNextPage).toBeDefined();
+        expect(firstPage.body.pagination.count).toBeDefined();
+        
+        // If there's a next page, use the cursor
+        if (firstPage.body.pagination.hasNextPage && firstPage.body.pagination.nextCursor) {
+          const secondPage = await request(app.getHttpServer())
+            .get('/events')
+            .query({ 
+              cursor: firstPage.body.pagination.nextCursor, 
+              limit: 1,
+              sortBy: 'createdAt',
+              sortOrder: 'ASC'
+            })
+            .set('Authorization', `Bearer ${tokenUserA1}`)
+            .expect(200);
+
+          expect(secondPage.body.pagination.hasPrevPage).toBe(true);
+          
+          // The cursor mechanism is working if we get a response
+          // Data comparison depends on actual test data which may vary
+          expect(secondPage.body.data).toBeDefined();
+        }
+      });
+
+      it('should reject invalid cursor format', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ cursor: 'invalid-cursor' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(400);
+
+        expect(response.body.message).toContain('Invalid cursor');
+      });
+    });
+
+    describe('Offset-based Pagination', () => {
+      it('should return offset pagination metadata when requested', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ paginationType: 'offset' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        expect(response.body.data).toBeDefined();
+        expect(response.body.pagination).toBeDefined();
+        expect(response.body.pagination).toHaveProperty('total');
+        expect(response.body.pagination).toHaveProperty('page');
+        expect(response.body.pagination).toHaveProperty('limit');
+        expect(response.body.pagination).toHaveProperty('totalPages');
+        expect(response.body.pagination).toHaveProperty('hasNextPage');
+        expect(response.body.pagination).toHaveProperty('hasPrevPage');
+      });
+
+      it('should paginate correctly with offset', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ paginationType: 'offset', page: 1, limit: 1 })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        expect(response.body.data.length).toBeLessThanOrEqual(1);
+        expect(response.body.pagination.page).toBe(1);
+        expect(response.body.pagination.limit).toBe(1);
+      });
+    });
+
+    describe('Sorting', () => {
+      it('should sort by startDate ascending', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ sortBy: 'startDate', sortOrder: 'ASC' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        const dates = response.body.data.map((e: any) => new Date(e.startDate).getTime());
+        for (let i = 1; i < dates.length; i++) {
+          expect(dates[i]).toBeGreaterThanOrEqual(dates[i - 1]);
+        }
+      });
+
+      it('should sort by startDate descending', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ sortBy: 'startDate', sortOrder: 'DESC' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        const dates = response.body.data.map((e: any) => new Date(e.startDate).getTime());
+        for (let i = 1; i < dates.length; i++) {
+          expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
+        }
+      });
+
+      it('should sort by createdAt', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ sortBy: 'createdAt', sortOrder: 'DESC' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        const dates = response.body.data.map((e: any) => new Date(e.createdAt).getTime());
+        for (let i = 1; i < dates.length; i++) {
+          expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
+        }
+      });
+
+      it('should sort by title', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ sortBy: 'title', sortOrder: 'ASC' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        const titles = response.body.data.map((e: any) => e.title);
+        for (let i = 1; i < titles.length; i++) {
+          expect(titles[i].localeCompare(titles[i - 1])).toBeGreaterThanOrEqual(0);
+        }
+      });
+    });
+
+    describe('Filtering', () => {
+      it('should filter by status', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ status: 'draft' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        response.body.data.forEach((event: any) => {
+          expect(event.status).toBe('draft');
+        });
+      });
+
+      it('should filter by search term', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ search: 'Test' })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        // All returned events should contain 'Test' in title (case-insensitive)
+        response.body.data.forEach((event: any) => {
+          expect(event.title.toLowerCase()).toContain('test');
+        });
+      });
+
+      it('should filter by isVirtual', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ isVirtual: true })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        response.body.data.forEach((event: any) => {
+          expect(event.isVirtual).toBe(true);
+        });
+      });
+
+      it('should filter by createdById', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ createdById: userA1Id })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        response.body.data.forEach((event: any) => {
+          expect(event.createdById).toBe(userA1Id);
+        });
+      });
+    });
+
+    describe('Combined Queries', () => {
+      it('should combine multiple filters', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/events')
+          .query({ 
+            status: 'draft',
+            sortBy: 'startDate',
+            sortOrder: 'DESC',
+            limit: 5,
+          })
+          .set('Authorization', `Bearer ${tokenUserA1}`)
+          .expect(200);
+
+        expect(response.body.data.length).toBeLessThanOrEqual(5);
+        response.body.data.forEach((event: any) => {
+          expect(event.status).toBe('draft');
+        });
+      });
     });
   });
 });

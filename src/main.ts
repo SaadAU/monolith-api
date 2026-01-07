@@ -4,8 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger, PinoLogger } from 'nestjs-pino';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter, AllExceptionsFilter } from './common/filters';
-import { LoggingInterceptor } from './common/interceptors';
+import { HttpExceptionFilter, AllExceptionsFilter, ValidationExceptionFilter } from './common/filters';
+import { LoggingInterceptor, TimingInterceptor } from './common/interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -19,10 +19,20 @@ async function bootstrap() {
 
   // Global logging interceptor (uses PinoLogger for structured logging)
   const pinoLogger = await app.resolve(PinoLogger);
-  app.useGlobalInterceptors(new LoggingInterceptor(pinoLogger));
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(pinoLogger),
+    new TimingInterceptor(),
+  );
 
-  // Global exception filters (order matters - AllExceptions should be first)
-  app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
+  // Global exception filters (order matters - later filters catch first)
+  // ValidationExceptionFilter handles validation errors specifically
+  // HttpExceptionFilter handles all HTTP exceptions
+  // AllExceptionsFilter is the catch-all for unexpected errors
+  app.useGlobalFilters(
+    new AllExceptionsFilter(),
+    new HttpExceptionFilter(),
+    new ValidationExceptionFilter(),
+  );
 
   // Enable validation globally
   app.useGlobalPipes(

@@ -35,9 +35,18 @@ export class OrgsController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new organization (Admin only)' })
-  @ApiResponse({ status: 201, description: 'Organization created successfully', type: Org })
-  @ApiResponse({ status: 409, description: 'Organization with this slug already exists' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiResponse({
+    status: 201,
+    description: 'Organization created successfully',
+    type: Org,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Organization with this slug already exists',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   @ApiForbiddenResponse({ description: 'User does not have required role' })
   create(@Body() createOrgDto: CreateOrgDto): Promise<Org> {
     return this.orgsService.create(createOrgDto);
@@ -47,8 +56,14 @@ export class OrgsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all active organizations' })
-  @ApiResponse({ status: 200, description: 'List of organizations', type: [Org] })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of organizations',
+    type: [Org],
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   findAll(): Promise<Org[]> {
     return this.orgsService.findAll();
   }
@@ -59,7 +74,9 @@ export class OrgsController {
   @ApiOperation({ summary: 'Get organization by ID' })
   @ApiResponse({ status: 200, description: 'Organization found', type: Org })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Org> {
     return this.orgsService.findOne(id);
   }
@@ -70,7 +87,9 @@ export class OrgsController {
   @ApiOperation({ summary: 'Get organization by slug' })
   @ApiResponse({ status: 200, description: 'Organization found', type: Org })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   findBySlug(@Param('slug') slug: string): Promise<Org> {
     return this.orgsService.findBySlug(slug);
   }
@@ -83,8 +102,12 @@ export class OrgsController {
   @ApiResponse({ status: 200, description: 'Organization updated', type: Org })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   @ApiResponse({ status: 409, description: 'Slug conflict' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
-  @ApiForbiddenResponse({ description: 'User does not have required role or not member of org' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
+  @ApiForbiddenResponse({
+    description: 'User does not have required role or not member of org',
+  })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateOrgDto: UpdateOrgDto,
@@ -103,8 +126,12 @@ export class OrgsController {
   @ApiOperation({ summary: 'Delete organization (Admin only, own org)' })
   @ApiResponse({ status: 200, description: 'Organization deleted' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
-  @ApiForbiddenResponse({ description: 'User does not have required role or not member of org' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
+  @ApiForbiddenResponse({
+    description: 'User does not have required role or not member of org',
+  })
   remove(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
@@ -120,16 +147,26 @@ export class OrgsController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Deactivate organization (Admin only, own org)' })
-  @ApiResponse({ status: 200, description: 'Organization deactivated', type: Org })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization deactivated',
+    type: Org,
+  })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
-  @ApiForbiddenResponse({ description: 'User does not have required role or not member of org' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
+  @ApiForbiddenResponse({
+    description: 'User does not have required role or not member of org',
+  })
   deactivate(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
   ): Promise<Org> {
     if (user.orgId !== id) {
-      throw new ForbiddenException('You can only deactivate your own organization');
+      throw new ForbiddenException(
+        'You can only deactivate your own organization',
+      );
     }
     return this.orgsService.deactivate(id);
   }

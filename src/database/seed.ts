@@ -41,7 +41,7 @@ async function seed() {
     // ORGANIZATIONS
     // ============================================
     console.log('📁 Creating organizations...');
-    
+
     const orgs = [
       {
         id: '11111111-1111-4111-a111-111111111111',
@@ -79,7 +79,16 @@ async function seed() {
       await dataSource.query(
         `INSERT INTO orgs (id, name, slug, description, website, phone, address, "isActive", "createdAt", "updatedAt")
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())`,
-        [org.id, org.name, org.slug, org.description, org.website, org.phone, org.address, org.isActive]
+        [
+          org.id,
+          org.name,
+          org.slug,
+          org.description,
+          org.website,
+          org.phone,
+          org.address,
+          org.isActive,
+        ],
       );
       console.log(`   ✓ Created org: ${org.name}`);
     }
@@ -153,9 +162,19 @@ async function seed() {
       await dataSource.query(
         `INSERT INTO users (id, name, email, "passwordHash", phone, role, "orgId", "isActive", "createdAt", "updatedAt")
          VALUES ($1, $2, $3, $4, $5, $6, $7, true, NOW(), NOW())`,
-        [user.id, user.name, user.email, passwordHash, user.phone ?? null, user.role, user.orgId]
+        [
+          user.id,
+          user.name,
+          user.email,
+          passwordHash,
+          user.phone ?? null,
+          user.role,
+          user.orgId,
+        ],
       );
-      console.log(`   ✓ Created user: ${user.name} (${user.email}) - ${user.role}`);
+      console.log(
+        `   ✓ Created user: ${user.name} (${user.email}) - ${user.role}`,
+      );
     }
 
     // ============================================
@@ -188,7 +207,7 @@ async function seed() {
       await dataSource.query(
         `INSERT INTO students (id, name, email, phone, "enrollmentNumber", "isActive", "createdAt", "updatedAt")
          VALUES (gen_random_uuid(), $1, $2, $3, $4, true, NOW(), NOW())`,
-        [student.name, student.email, student.phone, student.enrollmentNumber]
+        [student.name, student.email, student.phone, student.enrollmentNumber],
       );
       console.log(`   ✓ Created student: ${student.name}`);
     }
@@ -202,7 +221,6 @@ async function seed() {
     console.log('   • admin@acme.com / Admin123! (admin)');
     console.log('   • john@acme.com / Moderator123! (moderator)');
     console.log('   • jane@acme.com / User123! (user)\n');
-
   } catch (error) {
     console.error('❌ Seed failed:', error);
     throw error;

@@ -72,7 +72,11 @@ export class EventResponseDto {
 
   @Expose()
   @Type(() => EventCreatorDto)
-  @ApiProperty({ description: 'Creator information', type: EventCreatorDto, required: false })
+  @ApiProperty({
+    description: 'Creator information',
+    type: EventCreatorDto,
+    required: false,
+  })
   createdBy?: EventCreatorDto;
 
   @Expose()
@@ -88,10 +92,14 @@ export class EventResponseDto {
  * Pagination metadata for cursor-based pagination
  */
 export class CursorPaginationMeta {
-  @ApiProperty({ description: 'Cursor to fetch next page (null if no more pages)' })
+  @ApiProperty({
+    description: 'Cursor to fetch next page (null if no more pages)',
+  })
   nextCursor!: string | null;
 
-  @ApiProperty({ description: 'Cursor to fetch previous page (null if on first page)' })
+  @ApiProperty({
+    description: 'Cursor to fetch previous page (null if on first page)',
+  })
   prevCursor!: string | null;
 
   @ApiProperty({ description: 'Whether there are more items after this page' })
@@ -135,11 +143,15 @@ export class EventListResponseDto {
   @ApiProperty({ description: 'List of events', type: [EventResponseDto] })
   data!: EventResponseDto[];
 
-  @ApiProperty({ description: 'Pagination metadata (cursor-based)', type: CursorPaginationMeta })
+  @ApiProperty({
+    description: 'Pagination metadata (cursor-based)',
+    type: CursorPaginationMeta,
+  })
   pagination!: CursorPaginationMeta;
 
-  @ApiPropertyOptional({ 
-    description: 'Total count (only included with offset pagination or when explicitly requested)',
+  @ApiPropertyOptional({
+    description:
+      'Total count (only included with offset pagination or when explicitly requested)',
     required: false,
   })
   total?: number;
@@ -153,7 +165,10 @@ export class EventListOffsetResponseDto {
   @ApiProperty({ description: 'List of events', type: [EventResponseDto] })
   data!: EventResponseDto[];
 
-  @ApiProperty({ description: 'Pagination metadata (offset-based)', type: OffsetPaginationMeta })
+  @ApiProperty({
+    description: 'Pagination metadata (offset-based)',
+    type: OffsetPaginationMeta,
+  })
   pagination!: OffsetPaginationMeta;
 }
 

@@ -12,12 +12,11 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('health', () => {
-    it('should return health status', () => {
-      const result = appController.getHealth();
-      expect(result.status).toBe('healthy');
-      expect(result.service).toBe('EventBoard API');
-      expect(typeof result.timestamp).toBe('string');
+  describe('root', () => {
+    it('should return welcome message', () => {
+      const result = appController.getRoot();
+      expect(result.message).toBe('Welcome to EventBoard API');
+      expect(result.docs).toBe('/api');
     });
   });
 });

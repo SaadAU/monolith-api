@@ -10,13 +10,13 @@ import { Response } from 'express';
 
 /**
  * Timing Interceptor
- * 
+ *
  * Adds X-Response-Time header to all responses with execution duration.
  * This is useful for:
  * - Performance monitoring and debugging
  * - Client-side performance tracking
  * - Identifying slow endpoints
- * 
+ *
  * Note: This interceptor measures the time from when the request
  * enters the interceptor chain until the response is ready.
  * It does NOT include middleware execution time.
@@ -30,7 +30,7 @@ export class TimingInterceptor implements NestInterceptor {
       tap(() => {
         const response = context.switchToHttp().getResponse<Response>();
         const duration = Date.now() - startTime;
-        
+
         // Add timing header if headers haven't been sent
         if (!response.headersSent) {
           response.setHeader('X-Response-Time', `${duration}ms`);

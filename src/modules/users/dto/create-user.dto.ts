@@ -17,14 +17,24 @@ export class CreateUserDto {
   @IsString()
   @MinLength(2, { message: 'Name must be at least 2 characters' })
   @MaxLength(100, { message: 'Name cannot exceed 100 characters' })
-  @Matches(/^[a-zA-Z\s'-]+$/, { message: 'Name can only contain letters, spaces, hyphens and apostrophes' })
-  @ApiProperty({ description: 'User full name', minLength: 2, maxLength: 100, example: 'John Doe' })
+  @Matches(/^[a-zA-Z\s'-]+$/, {
+    message: 'Name can only contain letters, spaces, hyphens and apostrophes',
+  })
+  @ApiProperty({
+    description: 'User full name',
+    minLength: 2,
+    maxLength: 100,
+    example: 'John Doe',
+  })
   name!: string;
 
   @IsNotEmpty({ message: 'Email is required' })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @MaxLength(255, { message: 'Email cannot exceed 255 characters' })
-  @ApiProperty({ description: 'User email address', example: 'john.doe@acme.com' })
+  @ApiProperty({
+    description: 'User email address',
+    example: 'john.doe@acme.com',
+  })
   email!: string;
 
   @IsNotEmpty({ message: 'Password is required' })
@@ -32,25 +42,44 @@ export class CreateUserDto {
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @MaxLength(100, { message: 'Password cannot exceed 100 characters' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-    message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+    message:
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number',
   })
-  @ApiProperty({ description: 'User password', minLength: 8, example: 'SecurePass123' })
+  @ApiProperty({
+    description: 'User password',
+    minLength: 8,
+    example: 'SecurePass123',
+  })
   password!: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(20, { message: 'Phone cannot exceed 20 characters' })
-  @Matches(/^[\d\s+()-]*$/, { message: 'Phone can only contain digits, spaces, +, (), -' })
-  @ApiProperty({ description: 'User phone number', required: false, example: '+1-555-123-4567' })
+  @Matches(/^[\d\s+()-]*$/, {
+    message: 'Phone can only contain digits, spaces, +, (), -',
+  })
+  @ApiProperty({
+    description: 'User phone number',
+    required: false,
+    example: '+1-555-123-4567',
+  })
   phone?: string;
 
   @IsOptional()
   @IsEnum(UserRole, { message: 'Role must be one of: admin, moderator, user' })
-  @ApiProperty({ description: 'User role', enum: UserRole, default: UserRole.USER, required: false })
+  @ApiProperty({
+    description: 'User role',
+    enum: UserRole,
+    default: UserRole.USER,
+    required: false,
+  })
   role?: UserRole;
 
   @IsNotEmpty({ message: 'Organization ID is required' })
   @IsUUID('4', { message: 'Organization ID must be a valid UUID' })
-  @ApiProperty({ description: 'Organization ID the user belongs to', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiProperty({
+    description: 'Organization ID the user belongs to',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   orgId!: string;
 }

@@ -9,18 +9,18 @@ import { validate, ValidationError } from 'class-validator';
 
 /**
  * Query Params Validation Pipe
- * 
+ *
  * A specialized pipe for validating and transforming query parameters.
  * This pipe provides stricter handling of query params compared to the
  * global ValidationPipe, with features specific to query string handling.
- * 
+ *
  * Features:
  * - Validates query params against a DTO class
  * - Transforms string values to proper types (numbers, booleans, etc.)
  * - Sanitizes string inputs (trims whitespace)
  * - Provides clear error messages for invalid params
  * - Handles arrays in query strings (e.g., ?ids=1&ids=2)
- * 
+ *
  * Usage:
  * ```typescript
  * @Get()
@@ -30,7 +30,7 @@ import { validate, ValidationError } from 'class-validator';
  *   // query is validated and transformed
  * }
  * ```
- * 
+ *
  * Note: For most cases, the global ValidationPipe handles query params.
  * Use this pipe when you need:
  * - Custom sanitization logic
@@ -39,7 +39,10 @@ import { validate, ValidationError } from 'class-validator';
  */
 @Injectable()
 export class QueryParamsValidationPipe implements PipeTransform {
-  async transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
+  async transform(
+    value: unknown,
+    metadata: ArgumentMetadata,
+  ): Promise<unknown> {
     // Only process query parameters with a metatype
     if (metadata.type !== 'query' || !metadata.metatype) {
       return value;
@@ -97,9 +100,9 @@ export class QueryParamsValidationPipe implements PipeTransform {
         sanitized[key] = trimmed === '' ? undefined : trimmed;
       } else if (Array.isArray(val)) {
         // Handle array values (e.g., ?ids=1&ids=2)
-        sanitized[key] = val.map((item) =>
-          typeof item === 'string' ? item.trim() : item,
-        ).filter((item) => item !== '');
+        sanitized[key] = val
+          .map((item) => (typeof item === 'string' ? item.trim() : item))
+          .filter((item) => item !== '');
       } else {
         sanitized[key] = val;
       }

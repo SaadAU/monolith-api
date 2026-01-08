@@ -48,13 +48,13 @@ export enum PaginationType {
 
 /**
  * Query parameters for filtering, sorting, and paginating events
- * 
+ *
  * Security features:
  * - All parameters are validated and sanitized
  * - Sort fields are whitelisted (only indexed columns)
  * - Search is limited in length to prevent DoS
  * - Unknown parameters are rejected (forbidNonWhitelisted in ValidationPipe)
- * 
+ *
  * Pagination:
  * - Supports both cursor-based (preferred) and offset-based pagination
  * - Cursor-based: Use 'cursor' param (base64-encoded event ID + timestamp)
@@ -174,8 +174,10 @@ export class QueryEventsDto {
   @IsString()
   @MaxLength(500, { message: 'Cursor cannot exceed 500 characters' })
   @ApiPropertyOptional({
-    description: 'Cursor for pagination (from previous response). Use for efficient infinite scroll.',
-    example: 'eyJpZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCIsInNvcnRWYWx1ZSI6IjIwMjYtMDEtMTVUMTA6MDA6MDBaIiwic29ydEZpZWxkIjoic3RhcnREYXRlIn0=',
+    description:
+      'Cursor for pagination (from previous response). Use for efficient infinite scroll.',
+    example:
+      'eyJpZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCIsInNvcnRWYWx1ZSI6IjIwMjYtMDEtMTVUMTA6MDA6MDBaIiwic29ydEZpZWxkIjoic3RhcnREYXRlIn0=',
   })
   cursor?: string;
 

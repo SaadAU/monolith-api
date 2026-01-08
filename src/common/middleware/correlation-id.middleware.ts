@@ -18,13 +18,13 @@ export class CorrelationIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // Use existing request ID from header or generate a new one
     const requestId = (req.headers[REQUEST_ID_HEADER] as string) || uuidv4();
-    
+
     // Attach to request for use in application
     req.requestId = requestId;
-    
+
     // Set response header
     res.setHeader(REQUEST_ID_HEADER, requestId);
-    
+
     next();
   }
 }

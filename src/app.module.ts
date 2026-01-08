@@ -12,7 +12,10 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { EventsModule } from './modules/events/events.module';
 import { ModerationModule } from './modules/moderation/moderation.module';
-import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware';
+import {
+  CorrelationIdMiddleware,
+  REQUEST_ID_HEADER,
+} from './common/middleware';
 
 @Module({
   imports: [
@@ -27,7 +30,10 @@ import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware'
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         pinoHttp: {
-          level: configService.get<string>('environment') === 'production' ? 'info' : 'debug',
+          level:
+            configService.get<string>('environment') === 'production'
+              ? 'info'
+              : 'debug',
           transport: {
             targets: [
               // Console output (pretty in dev, JSON in prod)
@@ -52,7 +58,9 @@ import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware'
             ],
           },
           customProps: (req: IncomingMessage) => ({
-            requestId: (req as IncomingMessage & { [REQUEST_ID_HEADER]?: string })[REQUEST_ID_HEADER],
+            requestId: (
+              req as IncomingMessage & { [REQUEST_ID_HEADER]?: string }
+            )[REQUEST_ID_HEADER],
           }),
           autoLogging: false, // We use our own LoggingInterceptor
         },
@@ -75,7 +83,7 @@ import { CorrelationIdMiddleware, REQUEST_ID_HEADER } from './common/middleware'
       }),
       inject: [ConfigService],
     }),
-    
+
     // Feature modules
     // HealthModule,
     // StudentsModule,

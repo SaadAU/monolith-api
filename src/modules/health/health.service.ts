@@ -1,6 +1,10 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { HealthCheckDto, ReadinessCheckDto, DependencyStatus } from './dto/health.dto';
+import {
+  HealthCheckDto,
+  ReadinessCheckDto,
+  DependencyStatus,
+} from './dto/health.dto';
 
 @Injectable()
 export class HealthService {
@@ -51,7 +55,8 @@ export class HealthService {
       return {
         name: 'database',
         status: 'error',
-        message: error instanceof Error ? error.message : 'Unknown database error',
+        message:
+          error instanceof Error ? error.message : 'Unknown database error',
       };
     }
   }

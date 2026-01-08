@@ -4,7 +4,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger, PinoLogger } from 'nestjs-pino';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter, AllExceptionsFilter, ValidationExceptionFilter } from './common/filters';
+import {
+  HttpExceptionFilter,
+  AllExceptionsFilter,
+  ValidationExceptionFilter,
+} from './common/filters';
 import { LoggingInterceptor, TimingInterceptor } from './common/interceptors';
 
 async function bootstrap() {
@@ -62,7 +66,11 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
-  logger.log(`🚀 Application is running on: http://localhost:${process.env.PORT ?? 3000}`);
-  logger.log(`📚 Swagger UI available at: http://localhost:${process.env.PORT ?? 3000}/api`);
+  logger.log(
+    `🚀 Application is running on: http://localhost:${process.env.PORT ?? 3000}`,
+  );
+  logger.log(
+    `📚 Swagger UI available at: http://localhost:${process.env.PORT ?? 3000}/api`,
+  );
 }
 void bootstrap();

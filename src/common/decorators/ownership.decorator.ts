@@ -8,14 +8,14 @@ export interface OwnershipMetadata {
    * e.g., 'EventsService', 'PostsService'
    */
   serviceName: string;
-  
+
   /**
    * The method name in the service to check ownership
    * Should return a boolean
    * e.g., 'isOwner'
    */
   methodName: string;
-  
+
   /**
    * The route param name containing the resource ID
    * e.g., 'id', 'eventId'

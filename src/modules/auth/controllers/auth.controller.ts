@@ -24,7 +24,13 @@ import { AuthService } from '../services/auth.service';
 import type { AuthenticatedUser } from '../services/auth.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
-import { SignupDto, LoginDto, AuthResponseDto, LogoutResponseDto, UserResponseDto } from '../dto';
+import {
+  SignupDto,
+  LoginDto,
+  AuthResponseDto,
+  LogoutResponseDto,
+  UserResponseDto,
+} from '../dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -41,8 +47,10 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
   ) {
-    const isProduction = this.configService.get<string>('environment') === 'production';
-    const jwtExpiresIn = this.configService.get<number>('jwt.expiresIn') || 86400; // 24 hours default
+    const isProduction =
+      this.configService.get<string>('environment') === 'production';
+    const jwtExpiresIn =
+      this.configService.get<number>('jwt.expiresIn') || 86400; // 24 hours default
 
     this.cookieOptions = {
       httpOnly: true, // Prevents JavaScript access (XSS protection)
@@ -61,7 +69,9 @@ export class AuthController {
     description: 'User successfully registered',
     type: AuthResponseDto,
   })
-  @ApiBadRequestResponse({ description: 'Validation failed or organization not found' })
+  @ApiBadRequestResponse({
+    description: 'Validation failed or organization not found',
+  })
   @ApiConflictResponse({ description: 'Email already exists in organization' })
   async signup(
     @Body() signupDto: SignupDto,
@@ -88,7 +98,9 @@ export class AuthController {
     type: AuthResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Validation failed' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials or account deactivated' })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials or account deactivated',
+  })
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -113,7 +125,9 @@ export class AuthController {
     description: 'Logout successful',
     type: LogoutResponseDto,
   })
-  async logout(@Res({ passthrough: true }) res: Response): Promise<LogoutResponseDto> {
+  async logout(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<LogoutResponseDto> {
     // Clear the access token cookie
     res.clearCookie('access_token', {
       httpOnly: true,
@@ -137,7 +151,9 @@ export class AuthController {
     description: 'Returns current user information',
     type: UserResponseDto,
   })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   async me(@CurrentUser() user: AuthenticatedUser): Promise<UserResponseDto> {
     // Get fresh user data from database
     const freshUser = await this.authService.getUserById(user.id);

@@ -34,17 +34,17 @@ export interface ValidationErrorResponse {
 
 /**
  * Validation Exception Filter
- * 
+ *
  * Provides enhanced error responses for validation failures.
  * Transforms class-validator errors into a structured format
  * that's easy to consume on the client side.
- * 
+ *
  * Features:
  * - Groups errors by field
  * - Provides the invalid value (sanitized)
  * - Lists all constraint violations per field
  * - Works with nested validation errors
- * 
+ *
  * Example response:
  * ```json
  * {
@@ -82,7 +82,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     // Check if this is a validation error from class-validator
     if (this.isValidationError(exceptionResponse)) {
       const validationErrors = this.extractValidationErrors(exceptionResponse);
-      
+
       const errorResponse: ValidationErrorResponse = {
         statusCode: status,
         error: 'Validation Error',
@@ -93,7 +93,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
       };
 
       this.logger.warn(
-        `Validation failed: ${request.method} ${request.url} - ${JSON.stringify(validationErrors.map(e => e.field))}`,
+        `Validation failed: ${request.method} ${request.url} - ${JSON.stringify(validationErrors.map((e) => e.field))}`,
       );
 
       response.status(status).json(errorResponse);
@@ -107,18 +107,21 @@ export class ValidationExceptionFilter implements ExceptionFilter {
   /**
    * Check if the exception response looks like a validation error
    */
-  private isValidationError(response: unknown): response is { message: string[] | string } {
+  private isValidationError(
+    response: unknown,
+  ): response is { message: string[] | string } {
     if (typeof response !== 'object' || response === null) {
       return false;
     }
 
     const resp = response as Record<string, unknown>;
-    
+
     // class-validator errors come as an array of messages
     if (Array.isArray(resp.message) && resp.message.length > 0) {
       // Check if messages look like validation errors
       return resp.message.some(
-        (msg: unknown) => typeof msg === 'string' && this.looksLikeValidationMessage(msg),
+        (msg: unknown) =>
+          typeof msg === 'string' && this.looksLikeValidationMessage(msg),
       );
     }
 
@@ -148,9 +151,9 @@ export class ValidationExceptionFilter implements ExceptionFilter {
   /**
    * Extract structured validation errors from exception response
    */
-  private extractValidationErrors(
-    response: { message: string[] | string },
-  ): ValidationFieldError[] {
+  private extractValidationErrors(response: {
+    message: string[] | string;
+  }): ValidationFieldError[] {
     const messages = Array.isArray(response.message)
       ? response.message
       : [response.message];
@@ -189,7 +192,9 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     }
 
     // Nested field pattern: "user.email must be..."
-    const nestedMatch = message.match(/^([\w.]+)\s+(must|should|is|cannot|has)/i);
+    const nestedMatch = message.match(
+      /^([\w.]+)\s+(must|should|is|cannot|has)/i,
+    );
     if (nestedMatch) {
       return nestedMatch[1];
     }

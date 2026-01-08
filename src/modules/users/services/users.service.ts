@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { createHash } from 'crypto';
@@ -23,7 +28,9 @@ export class UsersService {
     });
 
     if (!org) {
-      throw new BadRequestException(`Organization with ID '${createUserDto.orgId}' does not exist. Please create the organization first or use a valid orgId.`);
+      throw new BadRequestException(
+        `Organization with ID '${createUserDto.orgId}' does not exist. Please create the organization first or use a valid orgId.`,
+      );
     }
 
     // Check if email already exists in this org
@@ -32,7 +39,9 @@ export class UsersService {
     });
 
     if (existingUser) {
-      throw new ConflictException(`User with email '${createUserDto.email}' already exists in this organization`);
+      throw new ConflictException(
+        `User with email '${createUserDto.email}' already exists in this organization`,
+      );
     }
 
     // Hash password (simple hash for now - use bcrypt in production!)
@@ -44,15 +53,17 @@ export class UsersService {
     });
 
     const savedUser = await this.usersRepository.save(user);
-    
+
     // Remove passwordHash from response
     const { passwordHash: _, ...userWithoutPassword } = savedUser;
     return userWithoutPassword as User;
   }
 
   async findAll(orgId?: string): Promise<User[]> {
-    const whereCondition = orgId ? { orgId, isActive: true } : { isActive: true };
-    
+    const whereCondition = orgId
+      ? { orgId, isActive: true }
+      : { isActive: true };
+
     return await this.usersRepository.find({
       where: whereCondition,
       relations: ['org'],

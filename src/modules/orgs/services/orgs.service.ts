@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Org } from '../entities/org.entity';
@@ -19,7 +23,9 @@ export class OrgsService {
     });
 
     if (existingOrg) {
-      throw new ConflictException(`Organization with slug '${createOrgDto.slug}' already exists`);
+      throw new ConflictException(
+        `Organization with slug '${createOrgDto.slug}' already exists`,
+      );
     }
 
     const org = this.orgsRepository.create(createOrgDto);
@@ -68,7 +74,9 @@ export class OrgsService {
       });
 
       if (existingOrg) {
-        throw new ConflictException(`Organization with slug '${updateOrgDto.slug}' already exists`);
+        throw new ConflictException(
+          `Organization with slug '${updateOrgDto.slug}' already exists`,
+        );
       }
     }
 

@@ -4,7 +4,11 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { TimingInterceptor } from '../src/common/interceptors';
-import { ValidationExceptionFilter, HttpExceptionFilter, AllExceptionsFilter } from '../src/common/filters';
+import {
+  ValidationExceptionFilter,
+  HttpExceptionFilter,
+  AllExceptionsFilter,
+} from '../src/common/filters';
 
 describe('Cross-cutting Concerns (e2e)', () => {
   let app: INestApplication<App>;
@@ -15,7 +19,7 @@ describe('Cross-cutting Concerns (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Apply the same global configuration as main.ts
     app.useGlobalInterceptors(new TimingInterceptor());
     app.useGlobalFilters(
@@ -33,7 +37,7 @@ describe('Cross-cutting Concerns (e2e)', () => {
         },
       }),
     );
-    
+
     await app.init();
   });
 
@@ -43,18 +47,14 @@ describe('Cross-cutting Concerns (e2e)', () => {
 
   describe('TimingInterceptor', () => {
     it('should add X-Response-Time header to successful responses', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/').expect(200);
 
       expect(response.headers['x-response-time']).toBeDefined();
       expect(response.headers['x-response-time']).toMatch(/^\d+ms$/);
     });
 
     it('should measure time correctly (positive ms value)', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/').expect(200);
 
       // Time should be a positive number in ms format
       const timeMatch = response.headers['x-response-time'].match(/^(\d+)ms$/);
@@ -84,7 +84,7 @@ describe('Cross-cutting Concerns (e2e)', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('path');
       expect(response.body).toHaveProperty('timestamp');
-      
+
       // Check that validation errors are present
       const message = response.body.message;
       expect(Array.isArray(message) || typeof message === 'string').toBe(true);
@@ -106,7 +106,8 @@ describe('Cross-cutting Concerns (e2e)', () => {
       expect(response.body).toHaveProperty('message');
       // Validation should return multiple errors
       expect(
-        Array.isArray(response.body.message) || typeof response.body.message === 'string'
+        Array.isArray(response.body.message) ||
+          typeof response.body.message === 'string',
       ).toBe(true);
     });
   });
@@ -159,7 +160,9 @@ describe('Cross-cutting Concerns (e2e)', () => {
         expect(response.body).toHaveProperty('timestamp');
         expect(typeof response.body.timestamp).toBe('string');
         // Verify timestamp is valid ISO date
-        expect(new Date(response.body.timestamp).toISOString()).toBe(response.body.timestamp);
+        expect(new Date(response.body.timestamp).toISOString()).toBe(
+          response.body.timestamp,
+        );
       }
     });
   });

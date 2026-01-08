@@ -9,7 +9,7 @@ import { EventStatus } from '../src/modules/events/entities/event.entity';
 
 /**
  * E2E Tests for Events CRUD with Org Scoping and Ownership
- * 
+ *
  * Tests cover:
  * - CRUD operations for events
  * - Org scoping: users can only see events in their org
@@ -66,9 +66,21 @@ describe('Events CRUD (e2e)', () => {
     await setupTestData();
 
     // Get tokens
-    tokenUserA1 = await loginAndGetToken('usera1@eventstest.com', 'UserA1Pass123!', orgAId);
-    tokenUserA2 = await loginAndGetToken('usera2@eventstest.com', 'UserA2Pass123!', orgAId);
-    tokenUserB1 = await loginAndGetToken('userb1@eventstest.com', 'UserB1Pass123!', orgBId);
+    tokenUserA1 = await loginAndGetToken(
+      'usera1@eventstest.com',
+      'UserA1Pass123!',
+      orgAId,
+    );
+    tokenUserA2 = await loginAndGetToken(
+      'usera2@eventstest.com',
+      'UserA2Pass123!',
+      orgAId,
+    );
+    tokenUserB1 = await loginAndGetToken(
+      'userb1@eventstest.com',
+      'UserB1Pass123!',
+      orgBId,
+    );
   });
 
   afterAll(async () => {
@@ -82,34 +94,50 @@ describe('Events CRUD (e2e)', () => {
       `INSERT INTO orgs (id, name, slug, description, "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [orgAId, 'Events Test Org A', 'events-test-org-a', 'Org A for events e2e tests']
+      [
+        orgAId,
+        'Events Test Org A',
+        'events-test-org-a',
+        'Org A for events e2e tests',
+      ],
     );
 
     await dataSource.query(
       `INSERT INTO orgs (id, name, slug, description, "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [orgBId, 'Events Test Org B', 'events-test-org-b', 'Org B for events e2e tests']
+      [
+        orgBId,
+        'Events Test Org B',
+        'events-test-org-b',
+        'Org B for events e2e tests',
+      ],
     );
 
     // Hash passwords
-    const hashA1 = await argon2.hash('UserA1Pass123!', { type: argon2.argon2id });
-    const hashA2 = await argon2.hash('UserA2Pass123!', { type: argon2.argon2id });
-    const hashB1 = await argon2.hash('UserB1Pass123!', { type: argon2.argon2id });
+    const hashA1 = await argon2.hash('UserA1Pass123!', {
+      type: argon2.argon2id,
+    });
+    const hashA2 = await argon2.hash('UserA2Pass123!', {
+      type: argon2.argon2id,
+    });
+    const hashB1 = await argon2.hash('UserB1Pass123!', {
+      type: argon2.argon2id,
+    });
 
     // Create users for Org A
     await dataSource.query(
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [userA1Id, 'User A1', 'usera1@eventstest.com', hashA1, 'user', orgAId]
+      [userA1Id, 'User A1', 'usera1@eventstest.com', hashA1, 'user', orgAId],
     );
 
     await dataSource.query(
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [userA2Id, 'User A2', 'usera2@eventstest.com', hashA2, 'user', orgAId]
+      [userA2Id, 'User A2', 'usera2@eventstest.com', hashA2, 'user', orgAId],
     );
 
     // Create user for Org B
@@ -117,7 +145,7 @@ describe('Events CRUD (e2e)', () => {
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [userB1Id, 'User B1', 'userb1@eventstest.com', hashB1, 'user', orgBId]
+      [userB1Id, 'User B1', 'userb1@eventstest.com', hashB1, 'user', orgBId],
     );
 
     // Create events
@@ -126,7 +154,16 @@ describe('Events CRUD (e2e)', () => {
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [eventA1Id, 'Org A Event 1', 'Event created by User A1', '2026-06-15T10:00:00Z', 'draft', false, orgAId, userA1Id]
+      [
+        eventA1Id,
+        'Org A Event 1',
+        'Event created by User A1',
+        '2026-06-15T10:00:00Z',
+        'draft',
+        false,
+        orgAId,
+        userA1Id,
+      ],
     );
 
     // Event owned by User A2 in Org A
@@ -134,7 +171,16 @@ describe('Events CRUD (e2e)', () => {
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [eventA2Id, 'Org A Event 2', 'Event created by User A2', '2026-07-20T14:00:00Z', 'approved', false, orgAId, userA2Id]
+      [
+        eventA2Id,
+        'Org A Event 2',
+        'Event created by User A2',
+        '2026-07-20T14:00:00Z',
+        'approved',
+        false,
+        orgAId,
+        userA2Id,
+      ],
     );
 
     // Event owned by User B1 in Org B
@@ -142,20 +188,42 @@ describe('Events CRUD (e2e)', () => {
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [eventBId, 'Org B Event 1', 'Event created by User B1', '2026-08-10T09:00:00Z', 'draft', false, orgBId, userB1Id]
+      [
+        eventBId,
+        'Org B Event 1',
+        'Event created by User B1',
+        '2026-08-10T09:00:00Z',
+        'draft',
+        false,
+        orgBId,
+        userB1Id,
+      ],
     );
   }
 
   async function cleanupTestData() {
     // Delete events first
-    await dataSource.query(`DELETE FROM events WHERE "orgId" IN ($1, $2)`, [orgAId, orgBId]);
+    await dataSource.query(`DELETE FROM events WHERE "orgId" IN ($1, $2)`, [
+      orgAId,
+      orgBId,
+    ]);
     // Delete users
-    await dataSource.query(`DELETE FROM users WHERE "orgId" IN ($1, $2)`, [orgAId, orgBId]);
+    await dataSource.query(`DELETE FROM users WHERE "orgId" IN ($1, $2)`, [
+      orgAId,
+      orgBId,
+    ]);
     // Delete orgs
-    await dataSource.query(`DELETE FROM orgs WHERE id IN ($1, $2)`, [orgAId, orgBId]);
+    await dataSource.query(`DELETE FROM orgs WHERE id IN ($1, $2)`, [
+      orgAId,
+      orgBId,
+    ]);
   }
 
-  async function loginAndGetToken(email: string, password: string, orgId: string): Promise<string> {
+  async function loginAndGetToken(
+    email: string,
+    password: string,
+    orgId: string,
+  ): Promise<string> {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email, password, orgId })
@@ -163,7 +231,9 @@ describe('Events CRUD (e2e)', () => {
 
     // Extract token from cookie
     const cookies = response.headers['set-cookie'] as unknown as string[];
-    const accessTokenCookie = cookies?.find((c: string) => c.startsWith('access_token='));
+    const accessTokenCookie = cookies?.find((c: string) =>
+      c.startsWith('access_token='),
+    );
 
     if (accessTokenCookie) {
       return accessTokenCookie.split(';')[0].split('=')[1];
@@ -227,7 +297,9 @@ describe('Events CRUD (e2e)', () => {
       expect(response.body.id).toBeDefined();
 
       // Cleanup
-      await dataSource.query(`DELETE FROM events WHERE id = $1`, [response.body.id]);
+      await dataSource.query(`DELETE FROM events WHERE id = $1`, [
+        response.body.id,
+      ]);
     });
 
     it('should create a virtual event with URL', async () => {
@@ -248,7 +320,9 @@ describe('Events CRUD (e2e)', () => {
       expect(response.body.virtualUrl).toBe(eventData.virtualUrl);
 
       // Cleanup
-      await dataSource.query(`DELETE FROM events WHERE id = $1`, [response.body.id]);
+      await dataSource.query(`DELETE FROM events WHERE id = $1`, [
+        response.body.id,
+      ]);
     });
 
     it('should reject event with end date before start date', async () => {
@@ -264,7 +338,9 @@ describe('Events CRUD (e2e)', () => {
         .send(eventData)
         .expect(400);
 
-      expect(response.body.message).toContain('End date must be after start date');
+      expect(response.body.message).toContain(
+        'End date must be after start date',
+      );
     });
 
     it('should reject virtual event without URL', async () => {
@@ -281,7 +357,9 @@ describe('Events CRUD (e2e)', () => {
         .send(eventData)
         .expect(400);
 
-      expect(response.body.message).toContain('Virtual events must have a virtual URL');
+      expect(response.body.message).toContain(
+        'Virtual events must have a virtual URL',
+      );
     });
 
     it('should reject event without required fields', async () => {
@@ -299,7 +377,7 @@ describe('Events CRUD (e2e)', () => {
   // READ EVENTS TESTS (ORG SCOPING)
   // ===========================================
   describe('GET /events - List Events (Org Scoped)', () => {
-    it('should return only events from user\'s org', async () => {
+    it("should return only events from user's org", async () => {
       // User A1 should only see Org A events
       const response = await request(app.getHttpServer())
         .get('/events')
@@ -307,7 +385,7 @@ describe('Events CRUD (e2e)', () => {
         .expect(200);
 
       expect(response.body.data).toBeInstanceOf(Array);
-      
+
       // All events should belong to Org A
       response.body.data.forEach((event: any) => {
         expect(event.orgId).toBe(orgAId);
@@ -367,7 +445,7 @@ describe('Events CRUD (e2e)', () => {
   // GET SINGLE EVENT (ORG SCOPING)
   // ===========================================
   describe('GET /events/:id - Get Single Event', () => {
-    it('should return event in user\'s org', async () => {
+    it("should return event in user's org", async () => {
       const response = await request(app.getHttpServer())
         .get(`/events/${eventA1Id}`)
         .set('Authorization', `Bearer ${tokenUserA1}`)
@@ -398,7 +476,7 @@ describe('Events CRUD (e2e)', () => {
   // ===========================================
   // GET MY EVENTS
   // ===========================================
-  describe('GET /events/my-events - Get User\'s Events', () => {
+  describe("GET /events/my-events - Get User's Events", () => {
     it('should return only events created by the current user', async () => {
       const response = await request(app.getHttpServer())
         .get('/events/my-events')
@@ -433,7 +511,7 @@ describe('Events CRUD (e2e)', () => {
       // Restore original data
       await dataSource.query(
         `UPDATE events SET title = $1, description = $2 WHERE id = $3`,
-        ['Org A Event 1', 'Event created by User A1', eventA1Id]
+        ['Org A Event 1', 'Event created by User A1', eventA1Id],
       );
     });
 
@@ -470,7 +548,15 @@ describe('Events CRUD (e2e)', () => {
         `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "createdAt", "updatedAt")
          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
          RETURNING id`,
-        ['Temp Event', 'Temporary event for delete test', '2026-12-01T10:00:00Z', 'draft', false, orgAId, userA1Id]
+        [
+          'Temp Event',
+          'Temporary event for delete test',
+          '2026-12-01T10:00:00Z',
+          'draft',
+          false,
+          orgAId,
+          userA1Id,
+        ],
       );
       tempEventId = result[0].id;
     });
@@ -487,7 +573,10 @@ describe('Events CRUD (e2e)', () => {
         .expect(204);
 
       // Verify deletion
-      const result = await dataSource.query(`SELECT id FROM events WHERE id = $1`, [tempEventId]);
+      const result = await dataSource.query(
+        `SELECT id FROM events WHERE id = $1`,
+        [tempEventId],
+      );
       expect(result.length).toBe(0);
     });
 
@@ -562,8 +651,8 @@ describe('Events CRUD (e2e)', () => {
           .expect(400);
 
         // message can be string or array
-        const messages = Array.isArray(response.body.message) 
-          ? response.body.message.join(' ') 
+        const messages = Array.isArray(response.body.message)
+          ? response.body.message.join(' ')
           : response.body.message;
         expect(messages).toContain('should not exist');
       });
@@ -607,8 +696,8 @@ describe('Events CRUD (e2e)', () => {
           .expect(400);
 
         // message can be string or array
-        const messages = Array.isArray(response.body.message) 
-          ? response.body.message.join(' ') 
+        const messages = Array.isArray(response.body.message)
+          ? response.body.message.join(' ')
           : response.body.message;
         expect(messages).toContain('100 characters');
       });
@@ -661,22 +750,25 @@ describe('Events CRUD (e2e)', () => {
         expect(firstPage.body.pagination).toBeDefined();
         expect(firstPage.body.pagination.hasNextPage).toBeDefined();
         expect(firstPage.body.pagination.count).toBeDefined();
-        
+
         // If there's a next page, use the cursor
-        if (firstPage.body.pagination.hasNextPage && firstPage.body.pagination.nextCursor) {
+        if (
+          firstPage.body.pagination.hasNextPage &&
+          firstPage.body.pagination.nextCursor
+        ) {
           const secondPage = await request(app.getHttpServer())
             .get('/events')
-            .query({ 
-              cursor: firstPage.body.pagination.nextCursor, 
+            .query({
+              cursor: firstPage.body.pagination.nextCursor,
               limit: 1,
               sortBy: 'createdAt',
-              sortOrder: 'ASC'
+              sortOrder: 'ASC',
             })
             .set('Authorization', `Bearer ${tokenUserA1}`)
             .expect(200);
 
           expect(secondPage.body.pagination.hasPrevPage).toBe(true);
-          
+
           // The cursor mechanism is working if we get a response
           // Data comparison depends on actual test data which may vary
           expect(secondPage.body.data).toBeDefined();
@@ -733,7 +825,9 @@ describe('Events CRUD (e2e)', () => {
           .set('Authorization', `Bearer ${tokenUserA1}`)
           .expect(200);
 
-        const dates = response.body.data.map((e: any) => new Date(e.startDate).getTime());
+        const dates = response.body.data.map((e: any) =>
+          new Date(e.startDate).getTime(),
+        );
         for (let i = 1; i < dates.length; i++) {
           expect(dates[i]).toBeGreaterThanOrEqual(dates[i - 1]);
         }
@@ -746,7 +840,9 @@ describe('Events CRUD (e2e)', () => {
           .set('Authorization', `Bearer ${tokenUserA1}`)
           .expect(200);
 
-        const dates = response.body.data.map((e: any) => new Date(e.startDate).getTime());
+        const dates = response.body.data.map((e: any) =>
+          new Date(e.startDate).getTime(),
+        );
         for (let i = 1; i < dates.length; i++) {
           expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
         }
@@ -759,7 +855,9 @@ describe('Events CRUD (e2e)', () => {
           .set('Authorization', `Bearer ${tokenUserA1}`)
           .expect(200);
 
-        const dates = response.body.data.map((e: any) => new Date(e.createdAt).getTime());
+        const dates = response.body.data.map((e: any) =>
+          new Date(e.createdAt).getTime(),
+        );
         for (let i = 1; i < dates.length; i++) {
           expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
         }
@@ -774,7 +872,9 @@ describe('Events CRUD (e2e)', () => {
 
         const titles = response.body.data.map((e: any) => e.title);
         for (let i = 1; i < titles.length; i++) {
-          expect(titles[i].localeCompare(titles[i - 1])).toBeGreaterThanOrEqual(0);
+          expect(titles[i].localeCompare(titles[i - 1])).toBeGreaterThanOrEqual(
+            0,
+          );
         }
       });
     });
@@ -834,7 +934,7 @@ describe('Events CRUD (e2e)', () => {
       it('should combine multiple filters', async () => {
         const response = await request(app.getHttpServer())
           .get('/events')
-          .query({ 
+          .query({
             status: 'draft',
             sortBy: 'startDate',
             sortOrder: 'DESC',

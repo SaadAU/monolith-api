@@ -5,9 +5,9 @@ import { StudentsController } from './controller/students.controller';
 import { Student } from './entities/student.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Student])],  // Register entity
-  controllers: [StudentsController],                // Register controller
-  providers: [StudentsService],                     // Register service
-  exports: [StudentsService],                       // Export if other modules need it
+  imports: [TypeOrmModule.forFeature([Student])], // Register entity
+  controllers: [StudentsController], // Register controller
+  providers: [StudentsService], // Register service
+  exports: [StudentsService], // Export if other modules need it
 })
 export class StudentsModule {}

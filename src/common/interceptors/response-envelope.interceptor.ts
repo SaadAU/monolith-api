@@ -62,7 +62,7 @@ export const SKIP_ENVELOPE_KEY = 'skipResponseEnvelope';
 
 /**
  * Decorator to skip the response envelope for specific handlers
- * 
+ *
  * @example
  * ```typescript
  * @Get('raw')
@@ -88,7 +88,7 @@ export const SetPaginationMeta = (meta: PaginationMeta) =>
 
 /**
  * Response Envelope Interceptor
- * 
+ *
  * Wraps all successful responses in a consistent envelope format:
  * ```json
  * {
@@ -101,20 +101,21 @@ export const SetPaginationMeta = (meta: PaginationMeta) =>
  *   }
  * }
  * ```
- * 
+ *
  * Features:
  * - Consistent response structure across all endpoints
  * - Automatic timestamp and request ID injection
  * - Support for pagination metadata
  * - Can be skipped with @SkipEnvelope() decorator
- * 
+ *
  * Note: Error responses are handled by exception filters and
  * maintain their own consistent format.
  */
 @Injectable()
-export class ResponseEnvelopeInterceptor<T>
-  implements NestInterceptor<T, ApiResponseEnvelope<T> | T>
-{
+export class ResponseEnvelopeInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponseEnvelope<T> | T
+> {
   constructor(private readonly reflector: Reflector) {}
 
   intercept(
@@ -180,9 +181,15 @@ export class ResponseEnvelopeInterceptor<T>
   /**
    * Check if the response looks like a paginated response
    */
-  private isPaginatedResponse(
-    data: unknown,
-  ): data is { items: unknown[]; total?: number; page?: number; limit?: number; totalPages?: number; hasMore?: boolean; nextCursor?: string } {
+  private isPaginatedResponse(data: unknown): data is {
+    items: unknown[];
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+    hasMore?: boolean;
+    nextCursor?: string;
+  } {
     return (
       typeof data === 'object' &&
       data !== null &&

@@ -14,9 +14,9 @@ import { User, UserRole } from '../../users/entities/user.entity';
 /**
  * Allowed state transitions for the moderation workflow.
  * This implements a finite state machine for event lifecycle.
- * 
+ *
  * State Diagram:
- * 
+ *
  *   DRAFT ──────► SUBMITTED ──────► APPROVED
  *     ▲               │
  *     │               ▼
@@ -35,12 +35,13 @@ const ALLOWED_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
  * Human-readable messages for each transition
  */
 const TRANSITION_MESSAGES: Record<string, string> = {
-  'draft_submitted': 'Event submitted for moderation review',
-  'submitted_approved': 'Event approved and now visible to users',
-  'submitted_rejected': 'Event rejected - please review the feedback and resubmit',
-  'rejected_draft': 'Event moved back to draft for editing',
-  'approved_cancelled': 'Event has been cancelled',
-  'approved_completed': 'Event marked as completed',
+  draft_submitted: 'Event submitted for moderation review',
+  submitted_approved: 'Event approved and now visible to users',
+  submitted_rejected:
+    'Event rejected - please review the feedback and resubmit',
+  rejected_draft: 'Event moved back to draft for editing',
+  approved_cancelled: 'Event has been cancelled',
+  approved_completed: 'Event marked as completed',
 };
 
 @Injectable()
@@ -104,7 +105,10 @@ export class ModerationService {
    * Approve a submitted event (moderator/admin only)
    * Transition: SUBMITTED → APPROVED
    */
-  async approve(eventId: string, moderator: User): Promise<ModerationResponseDto> {
+  async approve(
+    eventId: string,
+    moderator: User,
+  ): Promise<ModerationResponseDto> {
     // Only moderators and admins can approve
     this.validateModeratorRole(moderator);
 
@@ -205,7 +209,10 @@ export class ModerationService {
    * Revert a rejected event back to draft (owner only)
    * Transition: REJECTED → DRAFT
    */
-  async revertToDraft(eventId: string, user: User): Promise<ModerationResponseDto> {
+  async revertToDraft(
+    eventId: string,
+    user: User,
+  ): Promise<ModerationResponseDto> {
     const event = await this.findEventWithValidation(eventId, user.orgId);
 
     // Only owner can revert their own events
@@ -237,7 +244,12 @@ export class ModerationService {
     moderator: User,
     page = 1,
     limit = 10,
-  ): Promise<{ data: ModerationResponseDto[]; total: number; page: number; limit: number }> {
+  ): Promise<{
+    data: ModerationResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     this.validateModeratorRole(moderator);
 
     const [events, total] = await this.eventsRepository.findAndCount({
@@ -275,7 +287,10 @@ export class ModerationService {
   /**
    * Find event with org validation
    */
-  private async findEventWithValidation(eventId: string, orgId: string): Promise<Event> {
+  private async findEventWithValidation(
+    eventId: string,
+    orgId: string,
+  ): Promise<Event> {
     const event = await this.eventsRepository.findOne({
       where: { id: eventId, orgId },
       relations: ['moderatedBy', 'createdBy'],
@@ -309,8 +324,7 @@ export class ModerationService {
   ): ModerationResponseDto {
     const transitionKey = this.getTransitionKey(previousStatus, event.status);
     const message =
-      TRANSITION_MESSAGES[transitionKey] ||
-      `Event status: ${event.status}`;
+      TRANSITION_MESSAGES[transitionKey] || `Event status: ${event.status}`;
 
     return {
       id: event.id,

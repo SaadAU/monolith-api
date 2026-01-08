@@ -283,25 +283,32 @@ export class CreateUserDto {
 **Organizations (`/orgs`):**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/orgs` | Create organization |
-| GET | `/orgs` | List all active organizations |
-| GET | `/orgs/:id` | Get organization by ID (includes users) |
-| GET | `/orgs/slug/:slug` | Get organization by URL slug |
-| PATCH | `/orgs/:id` | Update organization |
-| DELETE | `/orgs/:id` | Delete organization (hard delete) |
-| PATCH | `/orgs/:id/deactivate` | Deactivate organization (soft delete) |
+| POST | `/orgs` | Create organization (protected, admin-only) |
+| GET | `/orgs` | List all active organizations (protected) |
+| GET | `/orgs/:id` | Get organization by ID (includes users) (protected) |
+| GET | `/orgs/slug/:slug` | Get organization by URL slug (protected) |
+| PATCH | `/orgs/:id` | Update organization (protected, admin/org-admin) |
+| DELETE | `/orgs/:id` | Delete organization (hard delete) (protected, admin-only) |
+| PATCH | `/orgs/:id/deactivate` | Deactivate organization (soft delete) (protected, admin/org-admin) |
 
 **Users (`/users`):**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/users` | Create user |
-| GET | `/users` | List all active users |
-| GET | `/users?orgId=:id` | List users filtered by organization |
-| GET | `/users/:id` | Get user by ID |
-| PATCH | `/users/:id` | Update user |
-| DELETE | `/users/:id` | Delete user (hard delete) |
-| PATCH | `/users/:id/deactivate` | Deactivate user (soft delete) |
+| POST | `/users` | Create user (protected, admin/org-admin) |
+| GET | `/users` | List all active users (protected) |
+| GET | `/users?orgId=:id` | List users filtered by organization (protected) |
+| GET | `/users/:id` | Get user by ID (protected: self or admin/org-admin) |
+| PATCH | `/users/:id` | Update user (protected: self or admin/org-admin) |
+| DELETE | `/users/:id` | Delete user (hard delete) (protected, admin/org-admin) |
+| PATCH | `/users/:id/deactivate` | Deactivate user (soft delete) (protected, admin/org-admin) |
 
+#### Security for `/orgs` and `/users` endpoints
+
+All organization and user management routes **must not** be exposed as public, unauthenticated endpoints:
+
+- Protect all `/orgs` and `/users` routes with an authentication mechanism (for example, a JWT auth guard).
+- Apply role-based authorization guards so that only authorized roles (for example, `admin` or `org_admin`, and the user themself where appropriate) can access these endpoints.
+- When deploying, ensure these guards are enabled and that the service is never reachable from untrusted networks without authentication and authorization in place.
 ### 9. Seed Script
 
 **File:** `src/database/seed.ts`
@@ -441,7 +448,7 @@ GET /users?orgId=11111111-1111-1111-1111-111111111111
 
 ## Security Notes
 
-⚠️ **Password Hashing:** Currently using SHA256 for simplicity. In production, replace with `bcrypt`:
+⚠️ **Password Hashing:** Use a dedicated password hashing algorithm (for example, `bcrypt`); do **not** use fast, unsalted hashes like SHA256 for storing passwords.
 
 ```bash
 npm install bcrypt

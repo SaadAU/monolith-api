@@ -93,7 +93,13 @@ export class OrgsService {
   }
 
   async deactivate(id: string): Promise<Org> {
-    const org = await this.findOne(id);
+    const org = await this.orgsRepository.findOne({
+      where: { id },
+    });
+
+    if (!org) {
+      throw new NotFoundException(`Organization with ID '${id}' not found`);
+    }
     org.isActive = false;
     return await this.orgsRepository.save(org);
   }

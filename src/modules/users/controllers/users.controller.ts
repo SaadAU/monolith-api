@@ -35,18 +35,10 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
-  @ApiResponse({
-    status: 201,
-    description: 'User created successfully',
-    type: User,
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'User with this email already exists in organization',
-  })
-  @ApiUnauthorizedResponse({
-    description: 'Not authenticated or invalid token',
-  })
+  @ApiResponse({ status: 201, description: 'User created successfully', type: User })
+  @ApiResponse({ status: 400, description: 'Invalid organization ID' })
+  @ApiResponse({ status: 409, description: 'User with this email already exists in organization' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
   @ApiForbiddenResponse({ description: 'User does not have required role' })
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);

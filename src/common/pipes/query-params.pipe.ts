@@ -59,13 +59,13 @@ export class QueryParamsValidationPipe implements PipeTransform {
 
     // Transform plain object to class instance
     const instance = plainToInstance(
-      metadata.metatype as unknown as ClassConstructor<any>,
+      metadata.metatype as unknown as ClassConstructor<Record<string, unknown>>,
       sanitized,
       {
         enableImplicitConversion: true,
         exposeDefaultValues: true,
       },
-    );
+    ) as Record<string, unknown>;
 
     // Validate the instance
     const errors = await validate(instance as object, {

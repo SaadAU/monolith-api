@@ -137,10 +137,19 @@ jobs:
 
       - name: Wait for PostgreSQL
         run: |
-          until pg_isready -h localhost -p 5432 -U testuser; do
-            echo "Waiting for postgres..."
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U testuser > /dev/null 2>&1; then
+              echo "PostgreSQL is ready!"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
             sleep 2
           done
+          echo "PostgreSQL failed to start"
+          exit 1
+
+      - name: Wait additional time for PostgreSQL to be fully ready
+        run: sleep 3
 
       - name: Run E2E tests
         run: npm run test:e2e -- --forceExit --detectOpenHandles

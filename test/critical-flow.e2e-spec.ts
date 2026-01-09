@@ -65,7 +65,7 @@ describe('Critical Flow E2E Test', () => {
 
     // Setup prerequisite data (org and moderator)
     await setupTestData();
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await cleanupTestData();
@@ -113,6 +113,13 @@ describe('Critical Flow E2E Test', () => {
 
   async function cleanupTestData() {
     try {
+      if (!dataSource || !dataSource.isInitialized) {
+        console.warn(
+          'Cleanup skipped: DataSource not initialized or connection failed',
+        );
+        return;
+      }
+
       // Clean up in correct order due to foreign keys
       await dataSource.query(`DELETE FROM events WHERE "orgId" = $1`, [
         testOrgId,

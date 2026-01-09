@@ -1,11 +1,11 @@
 name: CI
 
-# Trigger CI on push to main or PR targeting main
+# Trigger CI on push to master or PR targeting master
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 # Cancel in-progress runs for the same branch
 concurrency:

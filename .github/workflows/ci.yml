@@ -113,7 +113,7 @@ jobs:
       DATABASE_SSL: 'false'
       # JWT configuration for tests
       JWT_SECRET: ci-test-jwt-secret-key-for-testing-only
-      JWT_EXPIRES_IN: 1h
+      JWT_EXPIRES_IN: 3600
       # Application config
       NODE_ENV: test
       PORT: 3000

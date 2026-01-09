@@ -3,7 +3,7 @@ name: CI
 # Trigger CI on push to master or PR targeting master
 on:
   push:
-    branches: [master]
+    branches: [master, Day-12]
   pull_request:
     branches: [master]
 

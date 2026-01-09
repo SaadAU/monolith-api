@@ -67,7 +67,6 @@ export class UsersService {
 
     return await this.usersRepository.find({
       where: whereCondition,
-      relations: ['org'],
       order: { name: 'ASC' },
     });
   }
@@ -75,7 +74,6 @@ export class UsersService {
   async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['org'],
     });
 
     if (!user) {

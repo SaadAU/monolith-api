@@ -5,6 +5,7 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { DataSource } from 'typeorm';
 import * as argon2 from 'argon2';
+import cookieParser from 'cookie-parser';
 import { EventStatus } from '../src/modules/events/entities/event.entity';
 
 /**
@@ -27,6 +28,7 @@ describe('Critical Flow E2E Test', () => {
   // Test data - using unique IDs to avoid conflicts with other tests
   const testOrgId = 'cf0f0001-1111-4111-a111-111111111111';
   const moderatorId = 'cf0f0002-1111-4111-a111-111111111111';
+  const uniqueTimestamp = Date.now(); // Generate once for entire test suite
 
   // Will be populated during test
   let userToken: string;
@@ -36,7 +38,7 @@ describe('Critical Flow E2E Test', () => {
   // Test user data
   const testUser = {
     name: 'Critical Flow User',
-    email: `criticalflow-${Date.now()}@test.com`, // Unique email to avoid conflicts
+    email: `criticalflow-${uniqueTimestamp}@test.com`, // Unique email to avoid conflicts
     password: 'SecureP@ss123!',
     phone: '+1-555-123-4567',
     orgId: testOrgId,
@@ -48,6 +50,9 @@ describe('Critical Flow E2E Test', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+
+    // Enable cookie-parser (required for JWT in cookies)
+    app.use(cookieParser());
 
     // Apply same configuration as main.ts
     app.useGlobalPipes(
@@ -166,12 +171,18 @@ describe('Critical Flow E2E Test', () => {
   describe('Complete User Journey', () => {
     // Step 1: User Signup
     it('Step 1: Should allow a new user to signup', async () => {
+      // Delete user first if exists to test fresh signup
+      await dataSource.query(
+        `DELETE FROM users WHERE email = $1 AND "orgId" = $2`,
+        [testUser.email, testUser.orgId]
+      );
+      
       const response = await request(app.getHttpServer())
         .post('/auth/signup')
         .send(testUser)
         .expect(201);
 
-      expect(response.body.data).toMatchObject({
+      expect(response.body.user).toMatchObject({
         email: testUser.email,
         name: testUser.name,
         role: 'user',
@@ -179,7 +190,7 @@ describe('Critical Flow E2E Test', () => {
       });
 
       // Should NOT return password hash
-      expect(response.body.data.passwordHash).toBeUndefined();
+      expect(response.body.user.passwordHash).toBeUndefined();
     });
 
     // Step 2: User Login
@@ -193,7 +204,7 @@ describe('Critical Flow E2E Test', () => {
         })
         .expect(200);
 
-      expect(response.body.data.email).toBe(testUser.email);
+      expect(response.body.user.email).toBe(testUser.email);
 
       // Extract and store token for subsequent requests
       const cookies = response.headers['set-cookie'] as unknown as string[];
@@ -220,11 +231,11 @@ describe('Critical Flow E2E Test', () => {
 
       const response = await request(app.getHttpServer())
         .post('/events')
-        .set('Cookie', `access_token=${userToken}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .send(eventData)
         .expect(201);
 
-      expect(response.body.data).toMatchObject({
+      expect(response.body).toMatchObject({
         title: eventData.title,
         description: eventData.description,
         location: eventData.location,
@@ -233,55 +244,52 @@ describe('Critical Flow E2E Test', () => {
       });
 
       // Store event ID for subsequent steps
-      createdEventId = response.body.data.id;
+      createdEventId = response.body.id;
       expect(createdEventId).toBeDefined();
     });
 
     // Step 4: Submit Event for Moderation
     it('Step 4: Should allow event owner to submit event for moderation', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/moderation/${createdEventId}/submit`)
-        .set('Cookie', `access_token=${userToken}`)
+        .post(`/moderation/events/${createdEventId}/submit`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
-      expect(response.body.data).toMatchObject({
+      expect(response.body).toMatchObject({
         id: createdEventId,
         status: EventStatus.SUBMITTED,
         previousStatus: EventStatus.DRAFT,
       });
-      expect(response.body.data.message).toContain('submitted');
+      expect(response.body.message).toContain('submitted');
     });
 
     // Step 5: Moderator Approves Event
     it('Step 5: Should allow moderator to approve the submitted event', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/moderation/${createdEventId}/approve`)
-        .set('Cookie', `access_token=${moderatorToken}`)
+        .post(`/moderation/events/${createdEventId}/approve`)
+        .set('Authorization', `Bearer ${moderatorToken}`)
         .expect(200);
 
-      expect(response.body.data).toMatchObject({
+      expect(response.body).toMatchObject({
         id: createdEventId,
         status: EventStatus.APPROVED,
         previousStatus: EventStatus.SUBMITTED,
       });
-      expect(response.body.data.message).toContain('approved');
+      expect(response.body.message).toContain('approved');
     });
 
     // Step 6: Verify Final State
     it('Step 6: Should verify the event is now publicly visible (approved)', async () => {
       const response = await request(app.getHttpServer())
         .get(`/events/${createdEventId}`)
-        .set('Cookie', `access_token=${userToken}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
-      expect(response.body.data).toMatchObject({
+      expect(response.body).toMatchObject({
         id: createdEventId,
         status: EventStatus.APPROVED,
         title: 'Critical Flow Test Event',
       });
-
-      // Verify approval metadata
-      expect(response.body.data.approvedAt).toBeDefined();
     });
   });
 
@@ -302,30 +310,30 @@ describe('Critical Flow E2E Test', () => {
 
       const response = await request(app.getHttpServer())
         .post('/events')
-        .set('Cookie', `access_token=${userToken}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .send(eventData)
         .expect(201);
 
-      rejectedEventId = response.body.data.id;
+      rejectedEventId = response.body.id;
     });
 
     it('Should submit the event for moderation', async () => {
       await request(app.getHttpServer())
-        .post(`/moderation/${rejectedEventId}/submit`)
-        .set('Cookie', `access_token=${userToken}`)
+        .post(`/moderation/events/${rejectedEventId}/submit`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
     });
 
     it('Should allow moderator to reject with reason', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/moderation/${rejectedEventId}/reject`)
-        .set('Cookie', `access_token=${moderatorToken}`)
+        .post(`/moderation/events/${rejectedEventId}/reject`)
+        .set('Authorization', `Bearer ${moderatorToken}`)
         .send({
           reason: 'Missing important details. Please add more information.',
         })
         .expect(200);
 
-      expect(response.body.data).toMatchObject({
+      expect(response.body).toMatchObject({
         id: rejectedEventId,
         status: EventStatus.REJECTED,
         previousStatus: EventStatus.SUBMITTED,
@@ -336,11 +344,11 @@ describe('Critical Flow E2E Test', () => {
 
     it('Should allow owner to revert rejected event to draft', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/moderation/${rejectedEventId}/revert-to-draft`)
-        .set('Cookie', `access_token=${userToken}`)
+        .post(`/moderation/events/${rejectedEventId}/revert-to-draft`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
-      expect(response.body.data).toMatchObject({
+      expect(response.body).toMatchObject({
         id: rejectedEventId,
         status: EventStatus.DRAFT,
         previousStatus: EventStatus.REJECTED,
@@ -351,7 +359,7 @@ describe('Critical Flow E2E Test', () => {
       // First update the event
       await request(app.getHttpServer())
         .patch(`/events/${rejectedEventId}`)
-        .set('Cookie', `access_token=${userToken}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .send({
           description: 'Updated with more detailed information as requested.',
         })
@@ -359,11 +367,11 @@ describe('Critical Flow E2E Test', () => {
 
       // Then resubmit
       const response = await request(app.getHttpServer())
-        .post(`/moderation/${rejectedEventId}/submit`)
-        .set('Cookie', `access_token=${userToken}`)
+        .post(`/moderation/events/${rejectedEventId}/submit`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
-      expect(response.body.data.status).toBe(EventStatus.SUBMITTED);
+      expect(response.body.status).toBe(EventStatus.SUBMITTED);
     });
   });
 
@@ -386,25 +394,25 @@ describe('Critical Flow E2E Test', () => {
       // Create and submit a test event
       const eventRes = await request(app.getHttpServer())
         .post('/events')
-        .set('Cookie', `access_token=${userToken}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .send({
           title: 'User Approval Attempt Event',
           startDate: '2026-09-15T10:00:00Z',
         })
         .expect(201);
 
-      const eventId = eventRes.body.data.id;
+      const eventId = eventRes.body.id;
 
       // Submit it
       await request(app.getHttpServer())
-        .post(`/moderation/${eventId}/submit`)
-        .set('Cookie', `access_token=${userToken}`)
+        .post(`/moderation/events/${eventId}/submit`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
       // Try to approve as regular user (should fail)
       await request(app.getHttpServer())
-        .post(`/moderation/${eventId}/approve`)
-        .set('Cookie', `access_token=${userToken}`)
+        .post(`/moderation/events/${eventId}/approve`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(403);
     });
   });

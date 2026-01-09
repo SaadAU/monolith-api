@@ -55,6 +55,7 @@ export class UsersService {
     const savedUser = await this.usersRepository.save(user);
 
     // Remove passwordHash from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _, ...userWithoutPassword } = savedUser;
     return userWithoutPassword as User;
   }

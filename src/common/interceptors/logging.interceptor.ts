@@ -20,8 +20,12 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
 
-    const { method, url, body } = request;
-    const requestId = request.requestId;
+    const { method, url } = request;
+    const body = (request as Record<string, unknown>).body as Record<
+      string,
+      unknown
+    >;
+    const requestId = (request as Record<string, unknown>).requestId as string;
     const startTime = Date.now();
 
     // Log incoming request
@@ -52,9 +56,9 @@ export class LoggingInterceptor implements NestInterceptor {
             `Request completed: ${method} ${url} - ${statusCode} [${duration}ms]`,
           );
         },
-        error: (error) => {
+        error: (error: Record<string, unknown>) => {
           const duration = Date.now() - startTime;
-          const statusCode = error.status || 500;
+          const statusCode = (error.status as number) || 500;
 
           this.logger.error(
             {
@@ -63,7 +67,7 @@ export class LoggingInterceptor implements NestInterceptor {
               url,
               statusCode,
               duration: `${duration}ms`,
-              error: error.message,
+              error: error.message as string,
             },
             `Request failed: ${method} ${url} - ${statusCode} [${duration}ms]`,
           );

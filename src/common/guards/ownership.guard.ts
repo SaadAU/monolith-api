@@ -47,8 +47,15 @@ export class OwnershipGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const req = context.switchToHttp().getRequest();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const request = req;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const user = request.user as {
+      id: string;
+      orgId: string;
+    };
 
     // User must be authenticated
     if (!user) {
@@ -56,7 +63,10 @@ export class OwnershipGuard implements CanActivate {
     }
 
     // Get resource ID from route params
-    const resourceId = request.params[ownershipMeta.idParam];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const resourceId = (request.params as Record<string, unknown>)[
+      ownershipMeta.idParam
+    ] as string;
 
     if (!resourceId) {
       throw new NotFoundException('Resource ID not found in request');
@@ -64,15 +74,21 @@ export class OwnershipGuard implements CanActivate {
 
     try {
       // Get the service instance
-      const service = this.moduleRef.get(ownershipMeta.serviceName, {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const svc = this.moduleRef.get(ownershipMeta.serviceName, {
         strict: false,
       });
 
-      if (!service) {
+      if (!svc) {
         throw new Error(`Service '${ownershipMeta.serviceName}' not found`);
       }
 
-      const method = service[ownershipMeta.methodName];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const method = svc[ownershipMeta.methodName] as (
+        resourceId: string,
+        userId: string,
+        orgId: string,
+      ) => Promise<boolean>;
 
       if (!method || typeof method !== 'function') {
         throw new Error(
@@ -82,7 +98,7 @@ export class OwnershipGuard implements CanActivate {
 
       // Call the ownership check method
       const isOwner = await method.call(
-        service,
+        svc as unknown,
         resourceId,
         user.id,
         user.orgId,

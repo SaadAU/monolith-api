@@ -9,11 +9,12 @@ import { AuthService, JwtPayload } from '../services/auth.service';
  * Custom JWT extraction from cookie
  */
 const cookieExtractor = (req: Request): string | null => {
-  let token = null;
   if (req && req.cookies) {
-    token = req.cookies['access_token'];
+    return (req.cookies as Record<string, unknown>)['access_token'] as
+      | string
+      | null;
   }
-  return token;
+  return null;
 };
 
 @Injectable()

@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User, UserRole } from '../../users/entities/user.entity';
 import { Org } from '../../orgs/entities/org.entity';
@@ -159,7 +163,9 @@ describe('AuthService', () => {
     it('should throw BadRequestException if organization does not exist', async () => {
       mockOrgsRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.signup(signupDto)).rejects.toThrow(BadRequestException);
+      await expect(service.signup(signupDto)).rejects.toThrow(
+        BadRequestException,
+      );
       await expect(service.signup(signupDto)).rejects.toThrow(
         `Organization with ID '${signupDto.orgId}' does not exist`,
       );
@@ -169,7 +175,9 @@ describe('AuthService', () => {
       mockOrgsRepository.findOne.mockResolvedValue(mockOrg);
       mockUsersRepository.findOne.mockResolvedValue(mockUser);
 
-      await expect(service.signup(signupDto)).rejects.toThrow(ConflictException);
+      await expect(service.signup(signupDto)).rejects.toThrow(
+        ConflictException,
+      );
       await expect(service.signup(signupDto)).rejects.toThrow(
         `User with email '${signupDto.email}' already exists in this organization`,
       );
@@ -212,8 +220,13 @@ describe('AuthService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(userWithHash),
       };
-      mockUsersRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
-      mockUsersRepository.save.mockResolvedValue({ ...userWithHash, lastLoginAt: new Date() });
+      mockUsersRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder as any,
+      );
+      mockUsersRepository.save.mockResolvedValue({
+        ...userWithHash,
+        lastLoginAt: new Date(),
+      });
 
       const result = await service.login(loginDto);
 
@@ -229,10 +242,16 @@ describe('AuthService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(null),
       };
-      mockUsersRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+      mockUsersRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder as any,
+      );
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow('Invalid email or password');
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.login(loginDto)).rejects.toThrow(
+        'Invalid email or password',
+      );
     });
 
     it('should throw UnauthorizedException for incorrect password', async () => {
@@ -242,10 +261,16 @@ describe('AuthService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(mockUser), // Has wrong hash
       };
-      mockUsersRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+      mockUsersRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder as any,
+      );
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow('Invalid email or password');
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.login(loginDto)).rejects.toThrow(
+        'Invalid email or password',
+      );
     });
 
     it('should throw UnauthorizedException for deactivated user', async () => {
@@ -256,10 +281,16 @@ describe('AuthService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(deactivatedUser),
       };
-      mockUsersRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+      mockUsersRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder as any,
+      );
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow('User account is deactivated');
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.login(loginDto)).rejects.toThrow(
+        'User account is deactivated',
+      );
     });
 
     it('should update lastLoginAt on successful login', async () => {
@@ -272,7 +303,9 @@ describe('AuthService', () => {
         andWhere: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(userWithHash),
       };
-      mockUsersRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+      mockUsersRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder as any,
+      );
       mockUsersRepository.save.mockResolvedValue(userWithHash);
 
       await service.login(loginDto);
@@ -339,7 +372,10 @@ describe('AuthService', () => {
     });
 
     it('should return null for deactivated user', async () => {
-      mockUsersRepository.findOne.mockResolvedValue({ ...mockUser, isActive: false });
+      mockUsersRepository.findOne.mockResolvedValue({
+        ...mockUser,
+        isActive: false,
+      });
 
       const result = await service.validateJwtPayload(payload);
 
@@ -370,7 +406,10 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException for deactivated user', async () => {
-      mockUsersRepository.findOne.mockResolvedValue({ ...mockUser, isActive: false });
+      mockUsersRepository.findOne.mockResolvedValue({
+        ...mockUser,
+        isActive: false,
+      });
 
       await expect(service.getUserById(mockUser.id)).rejects.toThrow(
         UnauthorizedException,

@@ -164,7 +164,9 @@ export class AuthService {
   /**
    * Validate JWT payload and return user
    */
-  async validateJwtPayload(payload: JwtPayload): Promise<AuthenticatedUser | null> {
+  async validateJwtPayload(
+    payload: JwtPayload,
+  ): Promise<AuthenticatedUser | null> {
     const user = await this.usersRepository.findOne({
       where: { id: payload.sub },
     });

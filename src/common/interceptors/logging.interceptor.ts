@@ -19,7 +19,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
-    
+
     const { method, url, body } = request;
     const requestId = request.requestId;
     const startTime = Date.now();
@@ -74,16 +74,16 @@ export class LoggingInterceptor implements NestInterceptor {
 
   private sanitizeBody(body: Record<string, unknown>): Record<string, unknown> {
     if (!body) return body;
-    
+
     const sanitized = { ...body };
     const sensitiveFields = ['password', 'token', 'secret', 'authorization'];
-    
+
     for (const field of sensitiveFields) {
       if (field in sanitized) {
         sanitized[field] = '[REDACTED]';
       }
     }
-    
+
     return sanitized;
   }
 }

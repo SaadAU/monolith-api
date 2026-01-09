@@ -9,7 +9,7 @@ import { EventStatus } from '../src/modules/events/entities/event.entity';
 
 /**
  * E2E Tests for Moderation Workflow (State Transitions)
- * 
+ *
  * Tests cover:
  * - Submit/Approve/Reject endpoints
  * - Allowed status transitions
@@ -72,16 +72,31 @@ describe('Moderation Workflow (e2e)', () => {
     await setupTestData();
 
     // Verify setup completed
-    const orgCheck = await dataSource.query('SELECT id FROM orgs WHERE id = $1', [orgId]);
+    const orgCheck = await dataSource.query(
+      'SELECT id FROM orgs WHERE id = $1',
+      [orgId],
+    );
     if (orgCheck.length === 0) {
       throw new Error('Test org was not created');
     }
 
     // Get tokens
-    tokenRegularUser = await loginAndGetToken('moduser@test.com', 'ModUserPass123!');
-    tokenModerator = await loginAndGetToken('modmoderator@test.com', 'ModModPass123!');
-    tokenAdmin = await loginAndGetToken('modadmin@test.com', 'ModAdminPass123!');
-    tokenOtherUser = await loginAndGetToken('modother@test.com', 'ModOtherPass123!');
+    tokenRegularUser = await loginAndGetToken(
+      'moduser@test.com',
+      'ModUserPass123!',
+    );
+    tokenModerator = await loginAndGetToken(
+      'modmoderator@test.com',
+      'ModModPass123!',
+    );
+    tokenAdmin = await loginAndGetToken(
+      'modadmin@test.com',
+      'ModAdminPass123!',
+    );
+    tokenOtherUser = await loginAndGetToken(
+      'modother@test.com',
+      'ModOtherPass123!',
+    );
   }, 30000); // Increase timeout to 30 seconds
 
   afterAll(async () => {
@@ -95,42 +110,76 @@ describe('Moderation Workflow (e2e)', () => {
       `INSERT INTO orgs (id, name, slug, description, "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [orgId, 'Moderation Test Org', 'moderation-test-org', 'Org for moderation e2e tests']
+      [
+        orgId,
+        'Moderation Test Org',
+        'moderation-test-org',
+        'Org for moderation e2e tests',
+      ],
     );
 
     // Hash passwords
-    const hashUser = await argon2.hash('ModUserPass123!', { type: argon2.argon2id });
-    const hashMod = await argon2.hash('ModModPass123!', { type: argon2.argon2id });
-    const hashAdmin = await argon2.hash('ModAdminPass123!', { type: argon2.argon2id });
-    const hashOther = await argon2.hash('ModOtherPass123!', { type: argon2.argon2id });
+    const hashUser = await argon2.hash('ModUserPass123!', {
+      type: argon2.argon2id,
+    });
+    const hashMod = await argon2.hash('ModModPass123!', {
+      type: argon2.argon2id,
+    });
+    const hashAdmin = await argon2.hash('ModAdminPass123!', {
+      type: argon2.argon2id,
+    });
+    const hashOther = await argon2.hash('ModOtherPass123!', {
+      type: argon2.argon2id,
+    });
 
     // Create users with different roles
     await dataSource.query(
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [regularUserId, 'Regular User', 'moduser@test.com', hashUser, 'user', orgId]
+      [
+        regularUserId,
+        'Regular User',
+        'moduser@test.com',
+        hashUser,
+        'user',
+        orgId,
+      ],
     );
 
     await dataSource.query(
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [moderatorId, 'Moderator User', 'modmoderator@test.com', hashMod, 'moderator', orgId]
+      [
+        moderatorId,
+        'Moderator User',
+        'modmoderator@test.com',
+        hashMod,
+        'moderator',
+        orgId,
+      ],
     );
 
     await dataSource.query(
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [adminId, 'Admin User', 'modadmin@test.com', hashAdmin, 'admin', orgId]
+      [adminId, 'Admin User', 'modadmin@test.com', hashAdmin, 'admin', orgId],
     );
 
     await dataSource.query(
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [otherUserId, 'Other User', 'modother@test.com', hashOther, 'user', orgId]
+      [
+        otherUserId,
+        'Other User',
+        'modother@test.com',
+        hashOther,
+        'user',
+        orgId,
+      ],
     );
 
     // Create events in various states (owned by regularUserId)
@@ -138,35 +187,83 @@ describe('Moderation Workflow (e2e)', () => {
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [draftEventId, 'Draft Event', 'A draft event for testing', '2026-06-15T10:00:00Z', 'draft', false, orgId, regularUserId]
+      [
+        draftEventId,
+        'Draft Event',
+        'A draft event for testing',
+        '2026-06-15T10:00:00Z',
+        'draft',
+        false,
+        orgId,
+        regularUserId,
+      ],
     );
 
     await dataSource.query(
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "submittedAt", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [submittedEventId, 'Submitted Event', 'A submitted event for testing', '2026-07-20T14:00:00Z', 'submitted', false, orgId, regularUserId]
+      [
+        submittedEventId,
+        'Submitted Event',
+        'A submitted event for testing',
+        '2026-07-20T14:00:00Z',
+        'submitted',
+        false,
+        orgId,
+        regularUserId,
+      ],
     );
 
     await dataSource.query(
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "submittedAt", "approvedAt", "moderatedById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW(), $9, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [approvedEventId, 'Approved Event', 'An approved event for testing', '2026-08-10T09:00:00Z', 'approved', false, orgId, regularUserId, moderatorId]
+      [
+        approvedEventId,
+        'Approved Event',
+        'An approved event for testing',
+        '2026-08-10T09:00:00Z',
+        'approved',
+        false,
+        orgId,
+        regularUserId,
+        moderatorId,
+      ],
     );
 
     await dataSource.query(
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "submittedAt", "rejectedAt", "rejectionReason", "moderatedById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW(), $9, $10, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [rejectedEventId, 'Rejected Event', 'A rejected event for testing', '2026-09-05T11:00:00Z', 'rejected', false, orgId, regularUserId, 'Event contains inappropriate content', moderatorId]
+      [
+        rejectedEventId,
+        'Rejected Event',
+        'A rejected event for testing',
+        '2026-09-05T11:00:00Z',
+        'rejected',
+        false,
+        orgId,
+        regularUserId,
+        'Event contains inappropriate content',
+        moderatorId,
+      ],
     );
 
     await dataSource.query(
       `INSERT INTO events (id, title, description, "startDate", status, "isVirtual", "orgId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [anotherDraftEventId, 'Another Draft Event', 'Another draft event for testing', '2026-10-15T10:00:00Z', 'draft', false, orgId, regularUserId]
+      [
+        anotherDraftEventId,
+        'Another Draft Event',
+        'Another draft event for testing',
+        '2026-10-15T10:00:00Z',
+        'draft',
+        false,
+        orgId,
+        regularUserId,
+      ],
     );
   }
 
@@ -184,18 +281,25 @@ describe('Moderation Workflow (e2e)', () => {
     }
   }
 
-  async function loginAndGetToken(email: string, password: string): Promise<string> {
+  async function loginAndGetToken(
+    email: string,
+    password: string,
+  ): Promise<string> {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email, password, orgId });
 
     if (response.status !== 200) {
-      throw new Error(`Login failed for ${email}: ${response.status} - ${JSON.stringify(response.body)}`);
+      throw new Error(
+        `Login failed for ${email}: ${response.status} - ${JSON.stringify(response.body)}`,
+      );
     }
 
     // Extract token from cookie
     const cookies = response.headers['set-cookie'] as unknown as string[];
-    const accessTokenCookie = cookies?.find((c: string) => c.startsWith('access_token='));
+    const accessTokenCookie = cookies?.find((c: string) =>
+      c.startsWith('access_token='),
+    );
 
     if (accessTokenCookie) {
       const token = accessTokenCookie.split(';')[0].split('=')[1];
@@ -209,7 +313,7 @@ describe('Moderation Workflow (e2e)', () => {
   async function resetEventStatus(eventId: string, status: string) {
     await dataSource.query(
       `UPDATE events SET status = $1, "rejectionReason" = NULL, "submittedAt" = NULL, "approvedAt" = NULL, "rejectedAt" = NULL, "moderatedById" = NULL WHERE id = $2`,
-      [status, eventId]
+      [status, eventId],
     );
   }
 
@@ -329,7 +433,9 @@ describe('Moderation Workflow (e2e)', () => {
         .expect(400);
 
       expect(response.body.statusCode).toBe(400);
-      expect(response.body.message).toContain('must be submitted for review first');
+      expect(response.body.message).toContain(
+        'must be submitted for review first',
+      );
     });
 
     it('should return 409 when event is already approved', async () => {
@@ -363,7 +469,8 @@ describe('Moderation Workflow (e2e)', () => {
 
     it('should allow moderator to reject a submitted event with reason', async () => {
       const rejectData = {
-        reason: 'Event description does not meet community guidelines. Please add more details about the event.',
+        reason:
+          'Event description does not meet community guidelines. Please add more details about the event.',
       };
 
       const response = await request(app.getHttpServer())
@@ -382,7 +489,8 @@ describe('Moderation Workflow (e2e)', () => {
 
     it('should allow admin to reject a submitted event', async () => {
       const rejectData = {
-        reason: 'This event violates our content policy. Please revise and resubmit.',
+        reason:
+          'This event violates our content policy. Please revise and resubmit.',
       };
 
       const response = await request(app.getHttpServer())
@@ -417,7 +525,7 @@ describe('Moderation Workflow (e2e)', () => {
       expect(response.body.statusCode).toBe(400);
       // Message is an array of validation errors
       expect(response.body.message).toEqual(
-        expect.arrayContaining([expect.stringContaining('reason')])
+        expect.arrayContaining([expect.stringContaining('reason')]),
       );
     });
 
@@ -431,7 +539,9 @@ describe('Moderation Workflow (e2e)', () => {
       expect(response.body.statusCode).toBe(400);
       // Message is an array of validation errors
       expect(response.body.message).toEqual(
-        expect.arrayContaining([expect.stringContaining('at least 10 characters')])
+        expect.arrayContaining([
+          expect.stringContaining('at least 10 characters'),
+        ]),
       );
     });
 
@@ -439,11 +549,15 @@ describe('Moderation Workflow (e2e)', () => {
       const response = await request(app.getHttpServer())
         .post(`/moderation/events/${draftEventId}/reject`)
         .set('Authorization', `Bearer ${tokenModerator}`)
-        .send({ reason: 'This event needs to be submitted first before rejection.' })
+        .send({
+          reason: 'This event needs to be submitted first before rejection.',
+        })
         .expect(400);
 
       expect(response.body.statusCode).toBe(400);
-      expect(response.body.message).toContain('must be submitted for review first');
+      expect(response.body.message).toContain(
+        'must be submitted for review first',
+      );
     });
 
     it('should return 409 when event is already rejected', async () => {
@@ -533,7 +647,7 @@ describe('Moderation Workflow (e2e)', () => {
       expect(response.body.total).toBeDefined();
       expect(response.body.page).toBeDefined();
       expect(response.body.limit).toBeDefined();
-      
+
       // All returned events should be in SUBMITTED status
       response.body.data.forEach((event: any) => {
         expect(event.status).toBe(EventStatus.SUBMITTED);
@@ -644,7 +758,10 @@ describe('Moderation Workflow (e2e)', () => {
       const rejectResponse = await request(app.getHttpServer())
         .post(`/moderation/events/${anotherDraftEventId}/reject`)
         .set('Authorization', `Bearer ${tokenModerator}`)
-        .send({ reason: 'Please add more details about the event location and agenda.' })
+        .send({
+          reason:
+            'Please add more details about the event location and agenda.',
+        })
         .expect(200);
 
       expect(rejectResponse.body.status).toBe(EventStatus.REJECTED);

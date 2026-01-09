@@ -49,9 +49,15 @@ export class UsersController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all active users (Admin/Moderator only)' })
-  @ApiQuery({ name: 'orgId', required: false, description: 'Filter by organization ID' })
+  @ApiQuery({
+    name: 'orgId',
+    required: false,
+    description: 'Filter by organization ID',
+  })
   @ApiResponse({ status: 200, description: 'List of users', type: [User] })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   @ApiForbiddenResponse({ description: 'User does not have required role' })
   findAll(@Query('orgId') orgId?: string): Promise<User[]> {
     return this.usersService.findAll(orgId);
@@ -63,7 +69,9 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'User found', type: User })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
     return this.usersService.findOne(id);
   }
@@ -75,7 +83,9 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user (Admin/Moderator only)' })
   @ApiResponse({ status: 200, description: 'User updated', type: User })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   @ApiForbiddenResponse({ description: 'User does not have required role' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -91,7 +101,9 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   @ApiForbiddenResponse({ description: 'User does not have required role' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.usersService.remove(id);
@@ -104,7 +116,9 @@ export class UsersController {
   @ApiOperation({ summary: 'Deactivate user (Admin/Moderator only)' })
   @ApiResponse({ status: 200, description: 'User deactivated', type: User })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated or invalid token' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated or invalid token',
+  })
   @ApiForbiddenResponse({ description: 'User does not have required role' })
   deactivate(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
     return this.usersService.deactivate(id);

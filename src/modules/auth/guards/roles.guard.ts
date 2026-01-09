@@ -10,13 +10,13 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 
 /**
  * Guard that checks if the authenticated user has the required role(s) to access a route.
- * 
+ *
  * This guard should be used AFTER JwtAuthGuard to ensure the user is authenticated first.
- * 
+ *
  * Authentication Flow:
  * 1. JwtAuthGuard validates the JWT token (returns 401 if invalid/missing)
  * 2. RolesGuard checks if user has required role (returns 403 if forbidden)
- * 
+ *
  * Usage:
  * @UseGuards(JwtAuthGuard, RolesGuard)
  * @Roles(UserRole.ADMIN)
@@ -27,10 +27,10 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     // Get required roles from the @Roles() decorator
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     // If no roles are specified, allow access (route is not role-protected)
     if (!requiredRoles || requiredRoles.length === 0) {

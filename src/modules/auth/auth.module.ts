@@ -16,7 +16,9 @@ import { Org } from '../orgs/entities/org.entity';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('jwt.secret') || 'your-secret-key-change-in-production',
+        secret:
+          configService.get<string>('jwt.secret') ||
+          'your-secret-key-change-in-production',
         signOptions: {
           expiresIn: configService.get<number>('jwt.expiresIn') || 86400, // 24 hours default
         },

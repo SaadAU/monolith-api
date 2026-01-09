@@ -1,0 +1,189 @@
+name: CI
+
+# Trigger CI on push to main or PR targeting main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================
+  # LINT JOB
+  # ============================================
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check TypeScript compilation
+        run: npx tsc --noEmit
+
+  # ============================================
+  # UNIT TEST JOB
+  # ============================================
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint  # Only run if lint passes
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:cov
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  # ============================================
+  # E2E TEST JOB
+  # ============================================
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint  # Only run if lint passes
+    
+    services:
+      # PostgreSQL service for e2e tests
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: eventboard_test
+        ports:
+          - 5432:5432
+        # Health check to wait for postgres to be ready
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Database connection for e2e tests
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USER: testuser
+      DATABASE_PASSWORD: testpass
+      DATABASE_NAME: eventboard_test
+      DATABASE_SSL: 'false'
+      # JWT configuration for tests
+      JWT_SECRET: ci-test-jwt-secret-key-for-testing-only
+      JWT_EXPIRES_IN: 1h
+      # Application config
+      NODE_ENV: test
+      PORT: 3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U testuser; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+
+      - name: Run E2E tests
+        run: npm run test:e2e -- --forceExit --detectOpenHandles
+
+  # ============================================
+  # BUILD JOB
+  # ============================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test, e2e]  # Only run if tests pass
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Verify dist folder exists
+        run: ls -la dist/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  # ============================================
+  # CI SUCCESS CHECK (for branch protection)
+  # ============================================
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [lint, test, e2e, build]
+    if: always()
+    
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.test.result }}" != "success" ]] || \
+             [[ "${{ needs.e2e.result }}" != "success" ]] || \
+             [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "One or more jobs failed"
+            exit 1
+          fi
+          echo "All CI checks passed! ✅"

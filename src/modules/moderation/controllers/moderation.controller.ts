@@ -23,7 +23,11 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { ModerationService } from '../services/moderation.service';
-import { RejectEventDto, ModerationResponseDto, PendingModerationListDto } from '../dto';
+import {
+  RejectEventDto,
+  ModerationResponseDto,
+  PendingModerationListDto,
+} from '../dto';
 import { JwtAuthGuard, RolesGuard } from '../../auth/guards';
 import { CurrentUser, Roles } from '../../auth/decorators';
 import { User, UserRole } from '../../users/entities/user.entity';
@@ -103,7 +107,9 @@ export class ModerationController {
     description: 'Event rejected',
     type: ModerationResponseDto,
   })
-  @ApiBadRequestResponse({ description: 'Invalid status transition or missing reason' })
+  @ApiBadRequestResponse({
+    description: 'Invalid status transition or missing reason',
+  })
   @ApiConflictResponse({ description: 'Event already rejected' })
   @ApiNotFoundResponse({ description: 'Event not found' })
   @ApiForbiddenResponse({ description: 'Requires moderator or admin role' })
@@ -154,8 +160,18 @@ export class ModerationController {
     description: 'List of events pending moderation',
     type: PendingModerationListDto,
   })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+  })
   @ApiForbiddenResponse({ description: 'Requires moderator or admin role' })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getPendingEvents(

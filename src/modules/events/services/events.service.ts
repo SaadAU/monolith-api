@@ -10,15 +10,15 @@ import { plainToInstance } from 'class-transformer';
 import { Event, EventStatus } from '../entities/event.entity';
 import { CreateEventDto } from '../dto/create-event.dto';
 import { UpdateEventDto } from '../dto/update-event.dto';
-import { 
-  QueryEventsDto, 
-  EventSortField, 
-  SortOrder, 
+import {
+  QueryEventsDto,
+  EventSortField,
+  SortOrder,
   PaginationType,
   DecodedCursor,
 } from '../dto/query-events.dto';
-import { 
-  EventResponseDto, 
+import {
+  EventResponseDto,
   EventListResponseDto,
   EventListOffsetResponseDto,
   CursorPaginationMeta,
@@ -27,7 +27,7 @@ import {
 
 /**
  * Events Service
- * 
+ *
  * Provides CRUD operations for events with:
  * - Organization scoping (multi-tenancy)
  * - Ownership-based access control
@@ -56,7 +56,8 @@ export class EventsService {
     const sortValue = this.getSortValue(event, sortField);
     const cursorData: DecodedCursor = {
       id: event.id,
-      sortValue: sortValue instanceof Date ? sortValue.toISOString() : sortValue,
+      sortValue:
+        sortValue instanceof Date ? sortValue.toISOString() : sortValue,
       sortField,
     };
     return Buffer.from(JSON.stringify(cursorData)).toString('base64');
@@ -70,17 +71,17 @@ export class EventsService {
     try {
       const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
       const parsed = JSON.parse(decoded) as DecodedCursor;
-      
+
       // Validate cursor structure
       if (!parsed.id || !parsed.sortField || parsed.sortValue === undefined) {
         return null;
       }
-      
+
       // Validate sortField is whitelisted
       if (!Object.values(EventSortField).includes(parsed.sortField)) {
         return null;
       }
-      
+
       return parsed;
     } catch {
       return null;
@@ -125,40 +126,42 @@ export class EventsService {
 
     // Status filter (validated enum via DTO)
     if (queryDto.status) {
-      queryBuilder.andWhere('event.status = :status', { status: queryDto.status });
+      queryBuilder.andWhere('event.status = :status', {
+        status: queryDto.status,
+      });
     }
 
     // Search filter (sanitized via DTO, limited length)
     if (queryDto.search) {
-      queryBuilder.andWhere('event.title ILIKE :search', { 
-        search: `%${queryDto.search}%` 
+      queryBuilder.andWhere('event.title ILIKE :search', {
+        search: `%${queryDto.search}%`,
       });
     }
 
     // Date range filters (validated ISO dates via DTO)
     if (queryDto.startDateFrom) {
-      queryBuilder.andWhere('event.startDate >= :startDateFrom', { 
-        startDateFrom: new Date(queryDto.startDateFrom) 
+      queryBuilder.andWhere('event.startDate >= :startDateFrom', {
+        startDateFrom: new Date(queryDto.startDateFrom),
       });
     }
 
     if (queryDto.startDateTo) {
-      queryBuilder.andWhere('event.startDate <= :startDateTo', { 
-        startDateTo: new Date(queryDto.startDateTo) 
+      queryBuilder.andWhere('event.startDate <= :startDateTo', {
+        startDateTo: new Date(queryDto.startDateTo),
       });
     }
 
     // Virtual event filter (validated boolean via DTO)
     if (queryDto.isVirtual !== undefined) {
-      queryBuilder.andWhere('event.isVirtual = :isVirtual', { 
-        isVirtual: queryDto.isVirtual 
+      queryBuilder.andWhere('event.isVirtual = :isVirtual', {
+        isVirtual: queryDto.isVirtual,
       });
     }
 
     // Creator filter (validated UUID via DTO)
     if (queryDto.createdById) {
-      queryBuilder.andWhere('event.createdById = :createdById', { 
-        createdById: queryDto.createdById 
+      queryBuilder.andWhere('event.createdById = :createdById', {
+        createdById: queryDto.createdById,
       });
     }
   }
@@ -174,7 +177,7 @@ export class EventsService {
   ): void {
     const comparison = sortOrder === SortOrder.ASC ? '>' : '<';
     const sortField = cursor.sortField;
-    
+
     // Map sort field to database column
     const columnMap: Record<EventSortField, string> = {
       [EventSortField.START_DATE]: 'event.startDate',
@@ -185,15 +188,15 @@ export class EventsService {
     };
 
     const column = columnMap[sortField];
-    
+
     // Keyset pagination: (sortValue, id) > (cursorSortValue, cursorId)
     // This handles ties in the sort field by using ID as tiebreaker
     queryBuilder.andWhere(
       `(${column} ${comparison} :cursorValue OR (${column} = :cursorValue AND event.id ${comparison} :cursorId))`,
-      { 
-        cursorValue: cursor.sortValue, 
-        cursorId: cursor.id 
-      }
+      {
+        cursorValue: cursor.sortValue,
+        cursorId: cursor.id,
+      },
     );
   }
 
@@ -211,7 +214,10 @@ export class EventsService {
     orgId: string,
   ): Promise<EventResponseDto> {
     // Validate date logic
-    if (createEventDto.endDate && new Date(createEventDto.endDate) <= new Date(createEventDto.startDate)) {
+    if (
+      createEventDto.endDate &&
+      new Date(createEventDto.endDate) <= new Date(createEventDto.startDate)
+    ) {
       throw new BadRequestException('End date must be after start date');
     }
 
@@ -223,7 +229,9 @@ export class EventsService {
     const event = this.eventsRepository.create({
       ...createEventDto,
       startDate: new Date(createEventDto.startDate),
-      endDate: createEventDto.endDate ? new Date(createEventDto.endDate) : undefined,
+      endDate: createEventDto.endDate
+        ? new Date(createEventDto.endDate)
+        : undefined,
       status: createEventDto.status || EventStatus.DRAFT,
       isVirtual: createEventDto.isVirtual || false,
       orgId,
@@ -231,7 +239,7 @@ export class EventsService {
     });
 
     const savedEvent = await this.eventsRepository.save(event);
-    
+
     // Reload with relations to return full data
     const eventWithRelations = await this.eventsRepository.findOne({
       where: { id: savedEvent.id },
@@ -244,7 +252,7 @@ export class EventsService {
   /**
    * Find all events for an organization (org-scoped)
    * Supports filtering, cursor/offset pagination, and sorting
-   * 
+   *
    * Pagination Strategy:
    * - Cursor-based (default): Better for feeds, infinite scroll, real-time data
    * - Offset-based: Better for admin tables with page numbers
@@ -278,7 +286,14 @@ export class EventsService {
 
     // Branch based on pagination type
     if (paginationType === PaginationType.CURSOR || cursor) {
-      return this.findAllWithCursor(queryBuilder, queryDto, sortBy, sortOrder, cursor, limit);
+      return this.findAllWithCursor(
+        queryBuilder,
+        queryDto,
+        sortBy,
+        sortOrder,
+        cursor,
+        limit,
+      );
     } else {
       return this.findAllWithOffset(queryBuilder, page, limit);
     }
@@ -304,15 +319,15 @@ export class EventsService {
       if (!decodedCursor) {
         throw new BadRequestException('Invalid cursor format');
       }
-      
+
       // Validate cursor sort field matches current query
       if (decodedCursor.sortField !== sortBy) {
         throw new BadRequestException(
           `Cursor was created with sortBy=${decodedCursor.sortField}, but query uses sortBy=${sortBy}. ` +
-          `Cursors are not portable across different sort configurations.`
+            `Cursors are not portable across different sort configurations.`,
         );
       }
-      
+
       this.applyCursorPagination(queryBuilder, decodedCursor, sortOrder);
     }
 
@@ -320,7 +335,7 @@ export class EventsService {
     queryBuilder.take(limit + 1);
 
     const events = await queryBuilder.getMany();
-    
+
     // Determine if there's a next page
     const hasNextPage = events.length > limit;
     if (hasNextPage) {
@@ -332,8 +347,10 @@ export class EventsService {
     const firstEvent = events[0];
 
     const pagination: CursorPaginationMeta = {
-      nextCursor: hasNextPage && lastEvent ? this.encodeCursor(lastEvent, sortBy) : null,
-      prevCursor: cursor && firstEvent ? this.encodeCursor(firstEvent, sortBy) : null,
+      nextCursor:
+        hasNextPage && lastEvent ? this.encodeCursor(lastEvent, sortBy) : null,
+      prevCursor:
+        cursor && firstEvent ? this.encodeCursor(firstEvent, sortBy) : null,
       hasNextPage,
       hasPrevPage: !!cursor,
       count: events.length,
@@ -362,7 +379,7 @@ export class EventsService {
     const [events, total] = await queryBuilder.getManyAndCount();
 
     const totalPages = Math.ceil(total / limit);
-    
+
     const pagination: OffsetPaginationMeta = {
       total,
       page,
@@ -428,11 +445,11 @@ export class EventsService {
     }
 
     // Validate date logic if both dates are being set
-    const newStartDate = updateEventDto.startDate 
-      ? new Date(updateEventDto.startDate) 
+    const newStartDate = updateEventDto.startDate
+      ? new Date(updateEventDto.startDate)
       : event.startDate;
-    const newEndDate = updateEventDto.endDate 
-      ? new Date(updateEventDto.endDate) 
+    const newEndDate = updateEventDto.endDate
+      ? new Date(updateEventDto.endDate)
       : event.endDate;
 
     if (newEndDate && newEndDate <= newStartDate) {
@@ -442,7 +459,7 @@ export class EventsService {
     // Validate virtual event URL
     const willBeVirtual = updateEventDto.isVirtual ?? event.isVirtual;
     const willHaveUrl = updateEventDto.virtualUrl ?? event.virtualUrl;
-    
+
     if (willBeVirtual && !willHaveUrl) {
       throw new BadRequestException('Virtual events must have a virtual URL');
     }
@@ -450,8 +467,12 @@ export class EventsService {
     // Apply updates
     Object.assign(event, {
       ...updateEventDto,
-      startDate: updateEventDto.startDate ? new Date(updateEventDto.startDate) : event.startDate,
-      endDate: updateEventDto.endDate ? new Date(updateEventDto.endDate) : event.endDate,
+      startDate: updateEventDto.startDate
+        ? new Date(updateEventDto.startDate)
+        : event.startDate,
+      endDate: updateEventDto.endDate
+        ? new Date(updateEventDto.endDate)
+        : event.endDate,
     });
 
     const updatedEvent = await this.eventsRepository.save(event);
@@ -484,7 +505,11 @@ export class EventsService {
    * Check if user owns the event
    * Used by ownership guard
    */
-  async isOwner(eventId: string, userId: string, orgId: string): Promise<boolean> {
+  async isOwner(
+    eventId: string,
+    userId: string,
+    orgId: string,
+  ): Promise<boolean> {
     const event = await this.eventsRepository.findOne({
       where: { id: eventId, orgId },
       select: ['id', 'createdById'],
@@ -524,12 +549,14 @@ export class EventsService {
 
     // Apply additional filters
     if (queryDto.status) {
-      queryBuilder.andWhere('event.status = :status', { status: queryDto.status });
+      queryBuilder.andWhere('event.status = :status', {
+        status: queryDto.status,
+      });
     }
 
     if (queryDto.search) {
-      queryBuilder.andWhere('event.title ILIKE :search', { 
-        search: `%${queryDto.search}%` 
+      queryBuilder.andWhere('event.title ILIKE :search', {
+        search: `%${queryDto.search}%`,
       });
     }
 
@@ -540,7 +567,14 @@ export class EventsService {
 
     // Branch based on pagination type
     if (paginationType === PaginationType.CURSOR || cursor) {
-      return this.findAllWithCursor(queryBuilder, queryDto, sortBy, sortOrder, cursor, limit);
+      return this.findAllWithCursor(
+        queryBuilder,
+        queryDto,
+        sortBy,
+        sortOrder,
+        cursor,
+        limit,
+      );
     } else {
       return this.findAllWithOffset(queryBuilder, page, limit);
     }

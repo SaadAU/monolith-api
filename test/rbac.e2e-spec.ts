@@ -8,7 +8,7 @@ import * as argon2 from 'argon2';
 
 /**
  * E2E Tests for Role-Based Access Control (RBAC)
- * 
+ *
  * Tests cover:
  * - 401 Unauthorized: Missing or invalid JWT token
  * - 403 Forbidden: Valid token but insufficient role permissions
@@ -17,7 +17,7 @@ import * as argon2 from 'argon2';
 describe('RBAC Authorization (e2e)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
-  
+
   // Test org and user IDs - use valid UUID v4 format (only hex digits allowed)
   const testOrgId = 'e2e11111-1111-4111-a111-111111111111';
   const adminUserId = '02ead011-1111-4111-a111-111111111111';
@@ -35,7 +35,7 @@ describe('RBAC Authorization (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Apply same pipes as main.ts
     app.useGlobalPipes(
       new ValidationPipe({
@@ -47,15 +47,18 @@ describe('RBAC Authorization (e2e)', () => {
     );
 
     await app.init();
-    
+
     dataSource = moduleFixture.get(DataSource);
-    
+
     // Setup test data
     await setupTestData();
-    
+
     // Get tokens for each role
     adminToken = await loginAndGetToken('admin@e2etest.com', 'Admin123!');
-    moderatorToken = await loginAndGetToken('moderator@e2etest.com', 'Moderator123!');
+    moderatorToken = await loginAndGetToken(
+      'moderator@e2etest.com',
+      'Moderator123!',
+    );
     userToken = await loginAndGetToken('user@e2etest.com', 'User123!');
   });
 
@@ -71,12 +74,19 @@ describe('RBAC Authorization (e2e)', () => {
       `INSERT INTO orgs (id, name, slug, description, "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [testOrgId, 'E2E Test Org', 'e2e-test-org', 'Organization for RBAC e2e tests']
+      [
+        testOrgId,
+        'E2E Test Org',
+        'e2e-test-org',
+        'Organization for RBAC e2e tests',
+      ],
     );
 
     // Hash passwords using argon2
     const adminHash = await argon2.hash('Admin123!', { type: argon2.argon2id });
-    const moderatorHash = await argon2.hash('Moderator123!', { type: argon2.argon2id });
+    const moderatorHash = await argon2.hash('Moderator123!', {
+      type: argon2.argon2id,
+    });
     const userHash = await argon2.hash('User123!', { type: argon2.argon2id });
 
     // Create admin user
@@ -84,7 +94,14 @@ describe('RBAC Authorization (e2e)', () => {
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [adminUserId, 'E2E Admin', 'admin@e2etest.com', adminHash, 'admin', testOrgId]
+      [
+        adminUserId,
+        'E2E Admin',
+        'admin@e2etest.com',
+        adminHash,
+        'admin',
+        testOrgId,
+      ],
     );
 
     // Create moderator user
@@ -92,7 +109,14 @@ describe('RBAC Authorization (e2e)', () => {
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [moderatorUserId, 'E2E Moderator', 'moderator@e2etest.com', moderatorHash, 'moderator', testOrgId]
+      [
+        moderatorUserId,
+        'E2E Moderator',
+        'moderator@e2etest.com',
+        moderatorHash,
+        'moderator',
+        testOrgId,
+      ],
     );
 
     // Create regular user
@@ -100,24 +124,28 @@ describe('RBAC Authorization (e2e)', () => {
       `INSERT INTO users (id, name, email, "passwordHash", role, "orgId", "isActive", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
        ON CONFLICT (id) DO NOTHING`,
-      [regularUserId, 'E2E User', 'user@e2etest.com', userHash, 'user', testOrgId]
+      [
+        regularUserId,
+        'E2E User',
+        'user@e2etest.com',
+        userHash,
+        'user',
+        testOrgId,
+      ],
     );
   }
 
   async function cleanupTestData() {
     // Delete test users first (due to FK constraint)
-    await dataSource.query(
-      `DELETE FROM users WHERE "orgId" = $1`,
-      [testOrgId]
-    );
+    await dataSource.query(`DELETE FROM users WHERE "orgId" = $1`, [testOrgId]);
     // Delete test organization
-    await dataSource.query(
-      `DELETE FROM orgs WHERE id = $1`,
-      [testOrgId]
-    );
+    await dataSource.query(`DELETE FROM orgs WHERE id = $1`, [testOrgId]);
   }
 
-  async function loginAndGetToken(email: string, password: string): Promise<string> {
+  async function loginAndGetToken(
+    email: string,
+    password: string,
+  ): Promise<string> {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email, password, orgId: testOrgId })
@@ -125,13 +153,15 @@ describe('RBAC Authorization (e2e)', () => {
 
     // Extract token from cookie
     const cookies = response.headers['set-cookie'] as unknown as string[];
-    const accessTokenCookie = cookies?.find((c: string) => c.startsWith('access_token='));
-    
+    const accessTokenCookie = cookies?.find((c: string) =>
+      c.startsWith('access_token='),
+    );
+
     if (accessTokenCookie) {
       const token = accessTokenCookie.split(';')[0].split('=')[1];
       return token;
     }
-    
+
     throw new Error('No access token cookie returned');
   }
 
@@ -168,8 +198,9 @@ describe('RBAC Authorization (e2e)', () => {
 
     it('should return 401 when expired token is used', async () => {
       // This is a manually crafted expired token (payload has exp in the past)
-      const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxfQ.INVALID';
-      
+      const expiredToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxfQ.INVALID';
+
       const response = await request(app.getHttpServer())
         .get('/users')
         .set('Authorization', `Bearer ${expiredToken}`)
@@ -346,9 +377,11 @@ describe('RBAC Authorization (e2e)', () => {
           .expect(201);
 
         expect(response.body.name).toBe('Admin Created Org');
-        
+
         // Cleanup
-        await dataSource.query('DELETE FROM orgs WHERE id = $1', [response.body.id]);
+        await dataSource.query('DELETE FROM orgs WHERE id = $1', [
+          response.body.id,
+        ]);
       });
 
       it('should allow admin to update a user', async () => {
@@ -359,12 +392,12 @@ describe('RBAC Authorization (e2e)', () => {
           .expect(200);
 
         expect(response.body.name).toBe('Updated By Admin');
-        
+
         // Restore original name
-        await dataSource.query(
-          'UPDATE users SET name = $1 WHERE id = $2',
-          ['E2E User', regularUserId]
-        );
+        await dataSource.query('UPDATE users SET name = $1 WHERE id = $2', [
+          'E2E User',
+          regularUserId,
+        ]);
       });
 
       it('should allow admin to view organization details', async () => {
@@ -395,12 +428,12 @@ describe('RBAC Authorization (e2e)', () => {
           .expect(200);
 
         expect(response.body.name).toBe('Updated By Moderator');
-        
+
         // Restore original name
-        await dataSource.query(
-          'UPDATE users SET name = $1 WHERE id = $2',
-          ['E2E User', regularUserId]
-        );
+        await dataSource.query('UPDATE users SET name = $1 WHERE id = $2', [
+          'E2E User',
+          regularUserId,
+        ]);
       });
 
       it('should allow moderator to view organization details', async () => {
@@ -482,9 +515,9 @@ describe('RBAC Authorization (e2e)', () => {
           password: 'Password123!',
           orgId: testOrgId,
         });
-      
+
       expect(createResponse.status).toBe(201);
-      
+
       // Moderator cannot create user
       const modResponse = await request(app.getHttpServer())
         .post('/users')
@@ -495,12 +528,12 @@ describe('RBAC Authorization (e2e)', () => {
           password: 'Password123!',
           orgId: testOrgId,
         });
-      
+
       expect(modResponse.status).toBe(403);
-      
+
       // Cleanup
       await dataSource.query(
-        "DELETE FROM users WHERE email = 'hierarchy-test@e2etest.com'"
+        "DELETE FROM users WHERE email = 'hierarchy-test@e2etest.com'",
       );
     });
 
@@ -510,9 +543,9 @@ describe('RBAC Authorization (e2e)', () => {
         .get('/users')
         .set('Authorization', `Bearer ${moderatorToken}`)
         .expect(200);
-      
+
       expect(Array.isArray(modResponse.body)).toBe(true);
-      
+
       // Regular user cannot list users
       await request(app.getHttpServer())
         .get('/users')

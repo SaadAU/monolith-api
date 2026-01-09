@@ -36,7 +36,10 @@ export class ModerationResponseDto {
   previousStatus!: EventStatus;
 
   @Expose()
-  @ApiProperty({ description: 'Rejection reason (if rejected)', required: false })
+  @ApiProperty({
+    description: 'Rejection reason (if rejected)',
+    required: false,
+  })
   rejectionReason?: string;
 
   @Expose()
@@ -53,7 +56,11 @@ export class ModerationResponseDto {
 
   @Expose()
   @Type(() => ModeratorInfoDto)
-  @ApiProperty({ description: 'Moderator info', type: ModeratorInfoDto, required: false })
+  @ApiProperty({
+    description: 'Moderator info',
+    type: ModeratorInfoDto,
+    required: false,
+  })
   moderatedBy?: ModeratorInfoDto;
 
   @Expose()
@@ -70,7 +77,10 @@ export class ModerationResponseDto {
  */
 export class PendingModerationListDto {
   @Expose()
-  @ApiProperty({ description: 'List of events pending moderation', type: [ModerationResponseDto] })
+  @ApiProperty({
+    description: 'List of events pending moderation',
+    type: [ModerationResponseDto],
+  })
   data!: ModerationResponseDto[];
 
   @Expose()

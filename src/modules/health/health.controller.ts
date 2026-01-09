@@ -26,7 +26,8 @@ export class HealthController {
   @Get('ready')
   @ApiOperation({
     summary: 'Readiness probe',
-    description: 'Check if the application is ready to accept traffic (database connected, etc.)',
+    description:
+      'Check if the application is ready to accept traffic (database connected, etc.)',
   })
   @ApiResponse({
     status: 200,

@@ -1,13 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { StudentsService } from '../services/students.service';
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { UpdateStudentDto } from '../dto/update-student.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-@Controller('students')  // All routes start with /students
-@ApiTags('students')     // Groups in Swagger UI
+@Controller('students') // All routes start with /students
+@ApiTags('students') // Groups in Swagger UI
 export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) {}  // Auto-injected!
+  constructor(private readonly studentsService: StudentsService) {} // Auto-injected!
 
   @Post()
   @ApiOperation({ summary: 'Create a new student' })
@@ -24,11 +33,12 @@ export class StudentsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get student by ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {  // Auto-validates UUID
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    // Auto-validates UUID
     return this.studentsService.findOne(id);
   }
 
-  @Patch(':id')  // Use PATCH for partial updates
+  @Patch(':id') // Use PATCH for partial updates
   @ApiOperation({ summary: 'Update student' })
   update(
     @Param('id', ParseUUIDPipe) id: string,

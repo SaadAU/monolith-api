@@ -53,7 +53,11 @@ export class User {
     default: UserRole.USER,
   })
   @Index()
-  @ApiProperty({ description: 'User role', enum: UserRole, default: UserRole.USER })
+  @ApiProperty({
+    description: 'User role',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
   role!: UserRole;
 
   @Column({ type: 'uuid' })
@@ -62,7 +66,10 @@ export class User {
 
   @ManyToOne(() => Org, (org) => org.users, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'orgId' })
-  @ApiProperty({ description: 'Organization the user belongs to', type: () => Org })
+  @ApiProperty({
+    description: 'Organization the user belongs to',
+    type: () => Org,
+  })
   org!: Org;
 
   @Column({ default: true })

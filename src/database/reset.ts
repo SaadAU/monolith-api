@@ -19,16 +19,16 @@ async function reset() {
   try {
     // Drop tables in correct order (respect foreign keys)
     console.log('🗑️  Dropping tables...');
-    
+
     await dataSource.query('DROP TABLE IF EXISTS events CASCADE');
     console.log('   ✓ Dropped events table');
-    
+
     await dataSource.query('DROP TABLE IF EXISTS users CASCADE');
     console.log('   ✓ Dropped users table');
-    
+
     await dataSource.query('DROP TABLE IF EXISTS orgs CASCADE');
     console.log('   ✓ Dropped orgs table');
-    
+
     await dataSource.query('DROP TABLE IF EXISTS students CASCADE');
     console.log('   ✓ Dropped students table');
 
@@ -36,7 +36,7 @@ async function reset() {
     console.log('\n🗑️  Dropping enum types...');
     await dataSource.query('DROP TYPE IF EXISTS users_role_enum CASCADE');
     console.log('   ✓ Dropped users_role_enum type');
-    
+
     await dataSource.query('DROP TYPE IF EXISTS events_status_enum CASCADE');
     console.log('   ✓ Dropped events_status_enum type');
 
@@ -44,7 +44,6 @@ async function reset() {
     console.log('\n📋 Next steps:');
     console.log('   1. Restart the app to recreate tables (synchronize: true)');
     console.log('   2. Run: npm run db:seed\n');
-
   } catch (error) {
     console.error('❌ Reset failed:', error);
     throw error;

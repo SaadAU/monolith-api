@@ -158,7 +158,8 @@ describe('Critical Flow E2E Test', () => {
     );
 
     if (accessTokenCookie) {
-      return accessTokenCookie.split(';')[0].split('=')[1];
+      const token = accessTokenCookie.split(';')[0].split('=')[1];
+      return decodeURIComponent(token);
     }
 
     throw new Error('No access token cookie returned');
@@ -213,7 +214,9 @@ describe('Critical Flow E2E Test', () => {
       );
       expect(accessTokenCookie).toBeDefined();
 
-      userToken = accessTokenCookie!.split(';')[0].split('=')[1];
+      userToken = decodeURIComponent(
+        accessTokenCookie!.split(';')[0].split('=')[1],
+      );
     });
 
     // Step 3: Create Event

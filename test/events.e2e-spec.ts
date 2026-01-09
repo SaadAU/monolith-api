@@ -240,7 +240,8 @@ describe('Events CRUD (e2e)', () => {
     );
 
     if (accessTokenCookie) {
-      return accessTokenCookie.split(';')[0].split('=')[1];
+      const token = accessTokenCookie.split(';')[0].split('=')[1];
+      return decodeURIComponent(token);
     }
 
     throw new Error('No access token cookie returned');

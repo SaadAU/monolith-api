@@ -307,7 +307,7 @@ describe('Moderation Workflow (e2e)', () => {
 
     if (accessTokenCookie) {
       const token = accessTokenCookie.split(';')[0].split('=')[1];
-      return token;
+      return decodeURIComponent(token);
     }
 
     throw new Error(`No access token cookie returned for ${email}`);

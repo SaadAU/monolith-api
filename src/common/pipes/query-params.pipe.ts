@@ -5,7 +5,7 @@ import {
   ArgumentMetadata,
   BadRequestException,
 } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, ClassConstructor } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 
 /**
@@ -59,7 +59,7 @@ export class QueryParamsValidationPipe implements PipeTransform {
 
     // Transform plain object to class instance
     const instance = plainToInstance(
-      metadata.metatype as Record<string, unknown>,
+      metadata.metatype as unknown as ClassConstructor<any>,
       sanitized,
       {
         enableImplicitConversion: true,

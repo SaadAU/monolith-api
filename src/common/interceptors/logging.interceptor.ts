@@ -21,11 +21,11 @@ export class LoggingInterceptor implements NestInterceptor {
     const response = ctx.getResponse<Response>();
 
     const { method, url } = request;
-    const body = (request as Record<string, unknown>).body as Record<
+    const body = (request as unknown as Record<string, unknown>).body as Record<
       string,
       unknown
     >;
-    const requestId = (request as Record<string, unknown>).requestId as string;
+    const requestId = (request as unknown as Record<string, unknown>).requestId as string;
     const startTime = Date.now();
 
     // Log incoming request

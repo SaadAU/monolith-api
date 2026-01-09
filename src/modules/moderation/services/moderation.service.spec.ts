@@ -9,6 +9,7 @@ import {
 import { ModerationService } from './moderation.service';
 import { Event, EventStatus } from '../../events/entities/event.entity';
 import { User, UserRole } from '../../users/entities/user.entity';
+import { DomainEventEmitter } from '../../../common/events';
 
 /**
  * Unit Tests for ModerationService
@@ -97,6 +98,11 @@ describe('ModerationService', () => {
     findAndCount: jest.fn(),
   };
 
+  const mockDomainEventEmitter = {
+    emit: jest.fn(),
+    emitAll: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -104,6 +110,10 @@ describe('ModerationService', () => {
         {
           provide: getRepositoryToken(Event),
           useValue: mockEventsRepository,
+        },
+        {
+          provide: DomainEventEmitter,
+          useValue: mockDomainEventEmitter,
         },
       ],
     }).compile();

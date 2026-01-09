@@ -42,7 +42,6 @@ export class OrgsService {
   async findOne(id: string): Promise<Org> {
     const org = await this.orgsRepository.findOne({
       where: { id },
-      relations: ['users'],
     });
 
     if (!org) {

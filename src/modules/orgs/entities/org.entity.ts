@@ -4,11 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
   Index,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../../users/entities/user.entity';
 
 @Entity('orgs')
 export class Org {
@@ -47,8 +45,9 @@ export class Org {
   @ApiProperty({ description: 'Is organization active?', default: true })
   isActive!: boolean;
 
-  @OneToMany(() => User, (user) => user.org)
-  users!: User[];
+  // Note: No @OneToMany relation to avoid circular dependency with User entity
+  // If you need to load users, use UsersService.findByOrg(org.id)
+  // This enforces module boundaries and prevents coupling
 
   @CreateDateColumn()
   @ApiProperty({ description: 'Creation timestamp' })

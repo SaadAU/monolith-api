@@ -38,8 +38,12 @@ export class RolesGuard implements CanActivate {
     }
 
     // Get the authenticated user from the request
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const user = request.user as {
+      role: UserRole;
+    };
 
     // If no user is present (should be caught by JwtAuthGuard first)
     if (!user) {
@@ -47,7 +51,7 @@ export class RolesGuard implements CanActivate {
     }
 
     // Check if the user's role is in the list of required roles
-    const hasRole = requiredRoles.some((role) => user.role === role);
+    const hasRole = requiredRoles.some((role) => user?.role === role);
 
     if (!hasRole) {
       throw new ForbiddenException(

@@ -184,7 +184,6 @@ export class AuthService {
   async getUserById(userId: string): Promise<AuthenticatedUser> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      relations: ['org'],
     });
 
     if (!user) {

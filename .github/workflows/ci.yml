@@ -35,10 +35,10 @@ jobs:
         run: npm cache clean --force
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspace=apps/monolith-api
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run lint --workspace=apps/monolith-api
 
       - name: Check TypeScript compilation
         run: npx tsc --noEmit
@@ -66,10 +66,10 @@ jobs:
         run: npm cache clean --force
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspace=apps/monolith-api
 
       - name: Run unit tests with coverage
-        run: npm run test:cov
+        run: npm run test:cov --workspace=apps/monolith-api
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -133,7 +133,7 @@ jobs:
         run: npm cache clean --force
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspace=apps/monolith-api
 
       - name: Wait for PostgreSQL
         run: |
@@ -177,10 +177,10 @@ jobs:
         run: npm cache clean --force
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspace=apps/monolith-api
 
       - name: Build application
-        run: npm run build
+        run: npm run build --workspace=apps/monolith-api
 
       - name: Verify dist folder exists
         run: ls -la dist/

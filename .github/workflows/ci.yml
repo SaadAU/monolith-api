@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: './package-lock.json'
 
       - name: Clean npm cache
         run: npm cache clean --force
@@ -62,7 +62,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: './package-lock.json'
 
       - name: Clean npm cache
         run: npm cache clean --force
@@ -129,7 +129,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: './package-lock.json'
 
       - name: Clean npm cache
         run: npm cache clean --force
@@ -173,7 +173,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: './package-lock.json'
 
       - name: Clean npm cache
         run: npm cache clean --force

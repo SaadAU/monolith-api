@@ -102,7 +102,7 @@ export class CreateEventDto {
   isVirtual?: boolean;
 
   @IsOptional()
-  @ValidateIf((o) => o.isVirtual === true)
+  @ValidateIf((o: Record<string, unknown>) => o.isVirtual === true)
   @IsUrl({}, { message: 'Virtual URL must be a valid URL' })
   @MaxLength(500, { message: 'Virtual URL cannot exceed 500 characters' })
   @ApiProperty({

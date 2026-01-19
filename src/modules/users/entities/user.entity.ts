@@ -4,12 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
   Index,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Org } from '../../orgs/entities/org.entity';
 
 /**
  * User roles for RBAC authorization
@@ -62,15 +59,12 @@ export class User {
 
   @Column({ type: 'uuid' })
   @Index()
+  @ApiProperty({ description: 'Organization ID' })
   orgId!: string;
 
-  @ManyToOne(() => Org, (org) => org.users, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'orgId' })
-  @ApiProperty({
-    description: 'Organization the user belongs to',
-    type: () => Org,
-  })
-  org!: Org;
+  // Note: No @ManyToOne relation to avoid circular dependency
+  // If you need to load the org, use OrgsService.findOne(user.orgId)
+  // This enforces module boundaries and prevents coupling
 
   @Column({ default: true })
   @Index()

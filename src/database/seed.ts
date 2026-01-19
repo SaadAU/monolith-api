@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { DataSource } from 'typeorm';
 import * as argon2 from 'argon2';
 
@@ -29,8 +30,14 @@ async function seed() {
 
   try {
     // Check if data already exists
+
     const existingOrgs = await dataSource.query('SELECT COUNT(*) FROM orgs');
-    if (parseInt(existingOrgs[0].count) > 0) {
+
+    const count = parseInt(
+      (existingOrgs[0] as Record<string, string>).count,
+      10,
+    );
+    if (count > 0) {
       console.log('⚠️  Data already exists. Skipping seed.\n');
       console.log('   To re-seed, run: npm run db:reset\n');
       await dataSource.destroy();

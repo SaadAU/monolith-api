@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   PipeTransform,
   Injectable,
   ArgumentMetadata,
   BadRequestException,
 } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, ClassConstructor } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 
 /**
@@ -57,10 +58,14 @@ export class QueryParamsValidationPipe implements PipeTransform {
     const sanitized = this.sanitize(value as Record<string, unknown>);
 
     // Transform plain object to class instance
-    const instance = plainToInstance(metadata.metatype, sanitized, {
-      enableImplicitConversion: true,
-      exposeDefaultValues: true,
-    });
+    const instance = plainToInstance(
+      metadata.metatype as unknown as ClassConstructor<Record<string, unknown>>,
+      sanitized,
+      {
+        enableImplicitConversion: true,
+        exposeDefaultValues: true,
+      },
+    ) as Record<string, unknown>;
 
     // Validate the instance
     const errors = await validate(instance as object, {
@@ -88,7 +93,7 @@ export class QueryParamsValidationPipe implements PipeTransform {
    */
   private sanitize(value: Record<string, unknown>): Record<string, unknown> {
     if (!value || typeof value !== 'object') {
-      return value;
+      return value as Record<string, unknown>;
     }
 
     const sanitized: Record<string, unknown> = {};
@@ -132,8 +137,16 @@ export class QueryParamsValidationPipe implements PipeTransform {
   /**
    * Check if a type is a primitive type
    */
-  private isPrimitive(metatype: Function): boolean {
-    const primitives: Function[] = [String, Boolean, Number, Array, Object];
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  private isPrimitive(metatype: Function | undefined): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    const primitives: (Function | undefined)[] = [
+      String,
+      Boolean,
+      Number,
+      Array,
+      Object,
+    ];
     return primitives.includes(metatype);
   }
 }

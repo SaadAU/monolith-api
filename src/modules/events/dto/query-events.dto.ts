@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import {
   IsOptional,
   IsEnum,
@@ -79,6 +80,7 @@ export class QueryEventsDto {
   @IsOptional()
   @IsString()
   @MaxLength(100, { message: 'Search query cannot exceed 100 characters' })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @ApiPropertyOptional({
     description: 'Search by title (case-insensitive partial match)',
@@ -104,10 +106,10 @@ export class QueryEventsDto {
   startDateTo?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (value === 'true' || value === true) return true;
     if (value === 'false' || value === false) return false;
-    return value;
+    return (value as boolean) ?? value;
   })
   @IsBoolean({ message: 'isVirtual must be a boolean value' })
   @ApiPropertyOptional({
@@ -186,7 +188,10 @@ export class QueryEventsDto {
    * Only used when paginationType is 'offset'
    */
   @IsOptional()
-  @ValidateIf((o) => o.paginationType === PaginationType.OFFSET || !o.cursor)
+  @ValidateIf(
+    (o: Record<string, unknown>) =>
+      (o.paginationType as string) === PaginationType.OFFSET || !o.cursor,
+  )
   @Type(() => Number)
   @IsInt({ message: 'Page must be an integer' })
   @Min(1, { message: 'Page must be at least 1' })

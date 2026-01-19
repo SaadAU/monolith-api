@@ -5,6 +5,7 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { DataSource } from 'typeorm';
 import * as argon2 from 'argon2';
+import cookieParser from 'cookie-parser';
 import { EventStatus } from '../src/modules/events/entities/event.entity';
 
 /**
@@ -47,6 +48,9 @@ describe('Events CRUD (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+
+    // Enable cookie-parser (required for JWT in cookies)
+    app.use(cookieParser());
 
     // Apply same pipes as main.ts
     app.useGlobalPipes(
@@ -236,7 +240,8 @@ describe('Events CRUD (e2e)', () => {
     );
 
     if (accessTokenCookie) {
-      return accessTokenCookie.split(';')[0].split('=')[1];
+      const token = accessTokenCookie.split(';')[0].split('=')[1];
+      return decodeURIComponent(token);
     }
 
     throw new Error('No access token cookie returned');

@@ -10,6 +10,13 @@ import { Repository } from 'typeorm';
 import { Event, EventStatus } from '../../events/entities/event.entity';
 import { ModerationResponseDto } from '../dto/moderation-response.dto';
 import { User, UserRole } from '../../users/entities/user.entity';
+import { DomainEventEmitter } from '../../../common/events';
+import {
+  EventSubmittedEvent,
+  EventApprovedEvent,
+  EventRejectedEvent,
+  EventRevertedToDraftEvent,
+} from '../events';
 
 /**
  * Allowed state transitions for the moderation workflow.
@@ -49,6 +56,7 @@ export class ModerationService {
   constructor(
     @InjectRepository(Event)
     private eventsRepository: Repository<Event>,
+    private readonly domainEventEmitter: DomainEventEmitter,
   ) {}
 
   /**
@@ -98,6 +106,11 @@ export class ModerationService {
 
     await this.eventsRepository.save(event);
 
+    // Emit domain event
+    this.domainEventEmitter.emit(
+      new EventSubmittedEvent(event.id, user.id, user.orgId, event.title),
+    );
+
     return this.toModerationResponse(event, previousStatus, 'submit');
   }
 
@@ -146,6 +159,17 @@ export class ModerationService {
       where: { id: eventId },
       relations: ['moderatedBy', 'createdBy'],
     });
+
+    // Emit domain event
+    this.domainEventEmitter.emit(
+      new EventApprovedEvent(
+        eventId,
+        updatedEvent!.createdById,
+        moderator.orgId,
+        moderator.id,
+        updatedEvent!.title,
+      ),
+    );
 
     return this.toModerationResponse(updatedEvent!, previousStatus, 'approve');
   }
@@ -202,6 +226,18 @@ export class ModerationService {
       relations: ['moderatedBy', 'createdBy'],
     });
 
+    // Emit domain event
+    this.domainEventEmitter.emit(
+      new EventRejectedEvent(
+        eventId,
+        updatedEvent!.createdById,
+        moderator.orgId,
+        moderator.id,
+        updatedEvent!.title,
+        reason,
+      ),
+    );
+
     return this.toModerationResponse(updatedEvent!, previousStatus, 'reject');
   }
 
@@ -233,6 +269,17 @@ export class ModerationService {
     event.status = EventStatus.DRAFT;
 
     await this.eventsRepository.save(event);
+
+    // Emit domain event
+    this.domainEventEmitter.emit(
+      new EventRevertedToDraftEvent(
+        eventId,
+        user.id,
+        user.orgId,
+        event.title,
+        previousStatus,
+      ),
+    );
 
     return this.toModerationResponse(event, previousStatus, 'revert-to-draft');
   }

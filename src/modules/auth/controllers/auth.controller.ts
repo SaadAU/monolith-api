@@ -125,9 +125,7 @@ export class AuthController {
     description: 'Logout successful',
     type: LogoutResponseDto,
   })
-  async logout(
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<LogoutResponseDto> {
+  logout(@Res({ passthrough: true }) res: Response): LogoutResponseDto {
     // Clear the access token cookie
     res.clearCookie('access_token', {
       httpOnly: true,

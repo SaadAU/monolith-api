@@ -24,10 +24,9 @@ describe('AuthService', () => {
     phone: undefined,
     address: undefined,
     isActive: true,
-    users: [],
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  } as Org;
 
   const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
@@ -37,12 +36,11 @@ describe('AuthService', () => {
     phone: '+1-555-123-4567',
     role: UserRole.USER,
     orgId: '550e8400-e29b-41d4-a716-446655440000',
-    org: mockOrg,
     isActive: true,
     lastLoginAt: undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  } as User;
 
   const mockUsersRepository = {
     findOne: jest.fn(),

@@ -12,6 +12,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { EventsModule } from './modules/events/events.module';
 import { ModerationModule } from './modules/moderation/moderation.module';
+import { CommonEventsModule } from './common/events';
 import {
   CorrelationIdMiddleware,
   REQUEST_ID_HEADER,
@@ -87,6 +88,7 @@ import {
     // Feature modules
     // HealthModule,
     // StudentsModule,
+    CommonEventsModule, // Domain events (global)
     OrgsModule,
     UsersModule,
     AuthModule,

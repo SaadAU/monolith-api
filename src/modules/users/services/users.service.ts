@@ -55,6 +55,7 @@ export class UsersService {
     const savedUser = await this.usersRepository.save(user);
 
     // Remove passwordHash from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _, ...userWithoutPassword } = savedUser;
     return userWithoutPassword as User;
   }
@@ -66,7 +67,6 @@ export class UsersService {
 
     return await this.usersRepository.find({
       where: whereCondition,
-      relations: ['org'],
       order: { name: 'ASC' },
     });
   }
@@ -74,7 +74,6 @@ export class UsersService {
   async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['org'],
     });
 
     if (!user) {

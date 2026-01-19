@@ -65,7 +65,7 @@ export class QueryParamsValidationPipe implements PipeTransform {
         enableImplicitConversion: true,
         exposeDefaultValues: true,
       },
-    ) as Record<string, unknown>;
+    );
 
     // Validate the instance
     const errors = await validate(instance as object, {

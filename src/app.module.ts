@@ -13,6 +13,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { EventsModule } from './modules/events/events.module';
 import { ModerationModule } from './modules/moderation/moderation.module';
 import { CommonEventsModule } from './common/events';
+import { GatewayModule } from './gateway/gateway.module';
 import {
   CorrelationIdMiddleware,
   REQUEST_ID_HEADER,
@@ -94,6 +95,7 @@ import {
     AuthModule,
     EventsModule,
     ModerationModule,
+    GatewayModule, // API Gateway for microservices
   ],
   controllers: [AppController],
   providers: [],

@@ -25,7 +25,8 @@ export class LoggingInterceptor implements NestInterceptor {
       string,
       unknown
     >;
-    const requestId = (request as unknown as Record<string, unknown>).requestId as string;
+    const requestId = (request as unknown as Record<string, unknown>)
+      .requestId as string;
     const startTime = Date.now();
 
     // Log incoming request

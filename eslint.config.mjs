@@ -44,4 +44,26 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'off',
     },
   },
+  // Relaxed rules for gateway files (microservice dynamic responses)
+  {
+    files: ['src/gateway/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
+  // Relaxed rules for microservice files
+  {
+    files: ['apps/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
 );

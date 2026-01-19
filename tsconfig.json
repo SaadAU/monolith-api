@@ -14,6 +14,14 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@shared/*": ["libs/shared/*"],
+      "@shared": ["libs/shared/index"],
+      "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
+      "@database/*": ["src/database/*"],
+      "@modules/*": ["src/modules/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

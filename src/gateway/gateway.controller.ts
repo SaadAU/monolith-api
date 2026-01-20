@@ -67,15 +67,15 @@ export class GatewayController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const correlationId = (request as any)[REQUEST_ID_HEADER];
-    const result = await this.gatewayService.login(loginDto, correlationId);
+    const result = await this.gatewayService.login(loginDto, correlationId) as any;
 
     // Set token in HttpOnly cookie
-    response.cookie('access_token', result.accessToken, this.cookieOptions);
+    response.cookie('access_token', result?.accessToken, this.cookieOptions);
 
     return {
       message: 'Login successful',
-      accessToken: result.accessToken,
-      user: result.user,
+      accessToken: result?.accessToken,
+      user: result?.user,
     };
   }
 
@@ -89,14 +89,14 @@ export class GatewayController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const correlationId = (request as any)[REQUEST_ID_HEADER];
-    const result = await this.gatewayService.signup(signupDto, correlationId);
+    const result = await this.gatewayService.signup(signupDto, correlationId) as any;
 
-    response.cookie('access_token', result.accessToken, this.cookieOptions);
+    response.cookie('access_token', result?.accessToken, this.cookieOptions);
 
     return {
       message: 'Registration successful',
-      accessToken: result.accessToken,
-      user: result.user,
+      accessToken: result?.accessToken,
+      user: result?.user,
     };
   }
 
@@ -156,10 +156,10 @@ export class GatewayController {
   @ApiResponse({ status: 200, description: 'List of events' })
   async listEvents(
     @CurrentUser() user: User,
+    @Req() request: Request,
     @Query('skip') skip: string = '0',
     @Query('take') take: string = '10',
     @Query('status') status?: string,
-    @Req() request: Request,
   ) {
     const correlationId = (request as any)[REQUEST_ID_HEADER];
     return this.gatewayService.listEvents(

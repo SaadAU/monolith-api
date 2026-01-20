@@ -175,9 +175,9 @@ describe('Critical Flow E2E Test', () => {
       // Delete user first if exists to test fresh signup
       await dataSource.query(
         `DELETE FROM users WHERE email = $1 AND "orgId" = $2`,
-        [testUser.email, testUser.orgId]
+        [testUser.email, testUser.orgId],
       );
-      
+
       const response = await request(app.getHttpServer())
         .post('/auth/signup')
         .send(testUser)

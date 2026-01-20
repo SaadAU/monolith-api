@@ -13,12 +13,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  api:
+  # API Gateway - HTTP entry point
+  api-gateway:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nestjs_api
+    container_name: api_gateway
     restart: always
     ports:
       - "3000:3000"
@@ -29,13 +35,83 @@ services:
       - DB_USERNAME=admin
       - DB_PASSWORD=admin123
       - DB_DATABASE=mydb
+      - AUTH_SERVICE_HOST=auth-service
+      - AUTH_SERVICE_PORT=3002
+      - EVENTS_SERVICE_HOST=events-service
+      - EVENTS_SERVICE_PORT=3001
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      events-service:
+        condition: service_started
     networks:
       - app-network
+    command: npm run start:dev
+
+  # Auth Microservice - TCP server
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    container_name: auth_service
+    restart: always
+    expose:
+      - "3002"
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=admin
+      - DB_PASSWORD=admin123
+      - DB_DATABASE=mydb
+      - AUTH_SERVICE_HOST=0.0.0.0
+      - AUTH_SERVICE_PORT=3002
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: npm run start:auth
+
+  # Events Microservice - TCP server
+  events-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.events
+    container_name: events_service
+    restart: always
+    expose:
+      - "3001"
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=admin
+      - DB_PASSWORD=admin123
+      - DB_DATABASE=mydb
+      - EVENTS_SERVICE_HOST=0.0.0.0
+      - EVENTS_SERVICE_PORT=3001
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: npm run start:events
 
 volumes:
   postgres_data:

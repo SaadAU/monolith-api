@@ -3,9 +3,13 @@ export default () => ({
   environment: process.env.NODE_ENV ?? 'development',
   database: {
     host: process.env.DATABASE_HOST ?? process.env.DB_HOST ?? 'localhost',
-    port: parseInt(process.env.DATABASE_PORT ?? process.env.DB_PORT ?? '5433', 10),
+    port: parseInt(
+      process.env.DATABASE_PORT ?? process.env.DB_PORT ?? '5432',
+      10,
+    ),
     username: process.env.DATABASE_USER ?? process.env.DB_USERNAME ?? 'admin',
-    password: process.env.DATABASE_PASSWORD ?? process.env.DB_PASSWORD ?? 'admin123',
+    password:
+      process.env.DATABASE_PASSWORD ?? process.env.DB_PASSWORD ?? 'admin123',
     name: process.env.DATABASE_NAME ?? process.env.DB_NAME ?? 'mydb',
   },
   jwt: {

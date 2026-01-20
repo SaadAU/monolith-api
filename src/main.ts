@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -18,11 +19,15 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Use Pino logger
+
   const logger = app.get(Logger);
+
   app.useLogger(logger);
 
   // Global logging interceptor (uses PinoLogger for structured logging)
+
   const pinoLogger = await app.resolve(PinoLogger);
+
   app.useGlobalInterceptors(
     new LoggingInterceptor(pinoLogger),
     new TimingInterceptor(),
@@ -66,11 +71,12 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
-  logger.log(
-    `🚀 Application is running on: http://localhost:${process.env.PORT ?? 3000}`,
+  const port = process.env.PORT ?? 3000;
+  (logger as unknown as { log: (msg: string) => void }).log(
+    `🚀 Application is running on: http://localhost:${port}`,
   );
-  logger.log(
-    `📚 Swagger UI available at: http://localhost:${process.env.PORT ?? 3000}/api`,
+  (logger as unknown as { log: (msg: string) => void }).log(
+    `📚 Swagger UI available at: http://localhost:${port}/api`,
   );
 }
 void bootstrap();

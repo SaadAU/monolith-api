@@ -15,4 +15,6 @@ export const ROLES_KEY = 'roles';
  *
  * @param roles - Array of UserRole values that are allowed
  */
-export const Roles = (...roles: UserRole[]) => SetMetadata(ROLES_KEY, roles);
+export const Roles = (...roles: UserRole[]): ReturnType<typeof SetMetadata> => {
+  return SetMetadata(ROLES_KEY, roles);
+};

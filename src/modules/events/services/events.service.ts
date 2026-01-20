@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import {
   Injectable,
   NotFoundException,
@@ -346,11 +347,13 @@ export class EventsService {
     const lastEvent = events[events.length - 1];
     const firstEvent = events[0];
 
+    const nextCursorValue =
+      hasNextPage && lastEvent ? this.encodeCursor(lastEvent, sortBy) : null;
+    const prevCursorValue =
+      cursor && firstEvent ? this.encodeCursor(firstEvent, sortBy) : null;
     const pagination: CursorPaginationMeta = {
-      nextCursor:
-        hasNextPage && lastEvent ? this.encodeCursor(lastEvent, sortBy) : null,
-      prevCursor:
-        cursor && firstEvent ? this.encodeCursor(firstEvent, sortBy) : null,
+      nextCursor: nextCursorValue,
+      prevCursor: prevCursorValue,
       hasNextPage,
       hasPrevPage: !!cursor,
       count: events.length,

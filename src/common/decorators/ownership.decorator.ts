@@ -28,5 +28,8 @@ export interface OwnershipMetadata {
  * Usage:
  * @RequireOwnership({ serviceName: 'EventsService', methodName: 'isOwner', idParam: 'id' })
  */
-export const RequireOwnership = (metadata: OwnershipMetadata) =>
-  SetMetadata(OWNERSHIP_KEY, metadata);
+export const RequireOwnership = (
+  metadata: OwnershipMetadata,
+): ReturnType<typeof SetMetadata> => {
+  return SetMetadata(OWNERSHIP_KEY, metadata);
+};

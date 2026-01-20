@@ -34,7 +34,7 @@ services:
       - DB_PORT=5432
       - DB_USERNAME=admin
       - DB_PASSWORD=admin123
-      - DB_DATABASE=mydb
+      - DB_NAME=mydb
       - AUTH_SERVICE_HOST=auth-service
       - AUTH_SERVICE_PORT=3002
       - EVENTS_SERVICE_HOST=events-service
@@ -70,7 +70,7 @@ services:
       - DB_PORT=5432
       - DB_USERNAME=admin
       - DB_PASSWORD=admin123
-      - DB_DATABASE=mydb
+      - DB_NAME=mydb
       - AUTH_SERVICE_HOST=0.0.0.0
       - AUTH_SERVICE_PORT=3002
     volumes:
@@ -100,7 +100,7 @@ services:
       - DB_PORT=5432
       - DB_USERNAME=admin
       - DB_PASSWORD=admin123
-      - DB_DATABASE=mydb
+      - DB_NAME=mydb
       - EVENTS_SERVICE_HOST=0.0.0.0
       - EVENTS_SERVICE_PORT=3001
     volumes:

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 import {
   PipeTransform,
   Injectable,
@@ -45,12 +45,13 @@ export class QueryParamsValidationPipe implements PipeTransform {
     metadata: ArgumentMetadata,
   ): Promise<unknown> {
     // Only process query parameters with a metatype
-    if (metadata.type !== 'query' || !metadata.metatype) {
+    if (!metadata || metadata.type !== 'query' || !metadata.metatype) {
       return value;
     }
 
     // Skip primitive types
-    if (this.isPrimitive(metadata.metatype)) {
+    const metatype = metadata.metatype as Function;
+    if (this.isPrimitive(metatype)) {
       return value;
     }
 
@@ -58,14 +59,13 @@ export class QueryParamsValidationPipe implements PipeTransform {
     const sanitized = this.sanitize(value as Record<string, unknown>);
 
     // Transform plain object to class instance
-    const instance = plainToInstance(
-      metadata.metatype as unknown as ClassConstructor<Record<string, unknown>>,
-      sanitized,
-      {
-        enableImplicitConversion: true,
-        exposeDefaultValues: true,
-      },
-    );
+    const classConstructor = metadata.metatype as ClassConstructor<
+      Record<string, unknown>
+    >;
+    const instance = plainToInstance(classConstructor, sanitized, {
+      enableImplicitConversion: true,
+      exposeDefaultValues: true,
+    });
 
     // Validate the instance
     const errors = await validate(instance as object, {
@@ -137,9 +137,8 @@ export class QueryParamsValidationPipe implements PipeTransform {
   /**
    * Check if a type is a primitive type
    */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+
   private isPrimitive(metatype: Function | undefined): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const primitives: (Function | undefined)[] = [
       String,
       Boolean,

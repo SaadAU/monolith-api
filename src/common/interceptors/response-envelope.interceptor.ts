@@ -72,7 +72,9 @@ export const SKIP_ENVELOPE_KEY = 'skipResponseEnvelope';
  * }
  * ```
  */
-export const SkipEnvelope = () => SetMetadata(SKIP_ENVELOPE_KEY, true);
+export const SkipEnvelope = (): ReturnType<typeof SetMetadata> => {
+  return SetMetadata(SKIP_ENVELOPE_KEY, true);
+};
 
 /**
  * Metadata key for pagination info
@@ -83,8 +85,11 @@ export const PAGINATION_META_KEY = 'paginationMeta';
  * Decorator to set pagination metadata on responses
  * Use this in controllers that return paginated data
  */
-export const SetPaginationMeta = (meta: PaginationMeta) =>
-  SetMetadata(PAGINATION_META_KEY, meta);
+export const SetPaginationMeta = (
+  meta: PaginationMeta,
+): ReturnType<typeof SetMetadata> => {
+  return SetMetadata(PAGINATION_META_KEY, meta);
+};
 
 /**
  * Response Envelope Interceptor

@@ -10,8 +10,9 @@ import {
   HttpStatus,
   Res,
   ParseUUIDPipe,
+  Req,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import {
   ApiTags,
@@ -24,6 +25,7 @@ import { GatewayService } from './gateway.service';
 import { JwtAuthGuard } from '../modules/auth/guards';
 import { CurrentUser } from '../modules/auth/decorators';
 import { User } from '../modules/users/entities/user.entity';
+import { REQUEST_ID_HEADER } from '../common/middleware';
 import type {
   LoginRequestDto,
   SignupRequestDto,
@@ -33,6 +35,7 @@ import type {
 /**
  * API Gateway Controller
  * Routes HTTP requests to appropriate microservices
+ * Propagates correlation IDs for distributed tracing
  */
 @Controller('api/v1')
 @ApiTags('Gateway')
@@ -60,9 +63,11 @@ export class GatewayController {
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async login(
     @Body() loginDto: LoginRequestDto,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.gatewayService.login(loginDto);
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    const result = await this.gatewayService.login(loginDto, correlationId);
 
     // Set token in HttpOnly cookie
     response.cookie('access_token', result.accessToken, this.cookieOptions);
@@ -80,9 +85,11 @@ export class GatewayController {
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   async signup(
     @Body() signupDto: SignupRequestDto,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.gatewayService.signup(signupDto);
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    const result = await this.gatewayService.signup(signupDto, correlationId);
 
     response.cookie('access_token', result.accessToken, this.cookieOptions);
 
@@ -117,14 +124,16 @@ export class GatewayController {
   async createEvent(
     @Body() createEventDto: CreateEventRequestDto,
     @CurrentUser() user: User,
+    @Req() request: Request,
   ) {
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
     const eventData: CreateEventRequestDto = {
       ...createEventDto,
       orgId: user.orgId,
       createdById: user.id,
     };
 
-    return this.gatewayService.createEvent(eventData);
+    return this.gatewayService.createEvent(eventData, correlationId);
   }
 
   @Get('events/:id')
@@ -132,8 +141,12 @@ export class GatewayController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get event by ID' })
   @ApiResponse({ status: 200, description: 'Event details' })
-  async getEvent(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.gatewayService.getEvent(id);
+  async getEvent(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() request: Request,
+  ) {
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    return this.gatewayService.getEvent(id, correlationId);
   }
 
   @Get('events')
@@ -146,13 +159,18 @@ export class GatewayController {
     @Query('skip') skip: string = '0',
     @Query('take') take: string = '10',
     @Query('status') status?: string,
+    @Req() request: Request,
   ) {
-    return this.gatewayService.listEvents({
-      orgId: user.orgId,
-      skip: parseInt(skip, 10),
-      take: parseInt(take, 10),
-      status,
-    });
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    return this.gatewayService.listEvents(
+      {
+        orgId: user.orgId,
+        skip: parseInt(skip, 10),
+        take: parseInt(take, 10),
+        status,
+      },
+      correlationId,
+    );
   }
 
   @Post('events/:id')
@@ -165,12 +183,17 @@ export class GatewayController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateData: any,
     @CurrentUser() user: User,
+    @Req() request: Request,
   ) {
-    return this.gatewayService.updateEvent({
-      id,
-      ...updateData,
-      updatedById: user.id,
-    });
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    return this.gatewayService.updateEvent(
+      {
+        id,
+        ...updateData,
+        updatedById: user.id,
+      },
+      correlationId,
+    );
   }
 
   @Post('events/:id/delete')
@@ -182,8 +205,10 @@ export class GatewayController {
   async deleteEvent(
     @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUser() user: User,
+    @Req() request: Request,
   ) {
-    return this.gatewayService.deleteEvent(id, user.id);
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    return this.gatewayService.deleteEvent(id, user.id, correlationId);
   }
 
   @Post('events/:id/approve')
@@ -195,8 +220,10 @@ export class GatewayController {
   async approveEvent(
     @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUser() user: User,
+    @Req() request: Request,
   ) {
-    return this.gatewayService.approveEvent(id, user.id);
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    return this.gatewayService.approveEvent(id, user.id, correlationId);
   }
 
   @Post('events/:id/reject')
@@ -209,7 +236,14 @@ export class GatewayController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() body: { reason: string },
     @CurrentUser() user: User,
+    @Req() request: Request,
   ) {
-    return this.gatewayService.rejectEvent(id, body.reason, user.id);
+    const correlationId = (request as any)[REQUEST_ID_HEADER];
+    return this.gatewayService.rejectEvent(
+      id,
+      body.reason,
+      user.id,
+      correlationId,
+    );
   }
 }
